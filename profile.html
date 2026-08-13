@@ -1,0 +1,1088 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JARVIS — Профиль</title>
+  <link rel="icon" type="image/x-icon" href="jarvis.ico">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg0: #03060c;
+      --bg1: #0a0f18;
+      --bg2: #101a28;
+      --line: rgba(0,180,255,.16);
+      --line-soft: rgba(0,180,255,.08);
+      --ink: #dce8f5;
+      --ink-dim: #5f7a90;
+      --dim: #6c84a0;
+      --dim2: #3f5267;
+      --cyan: #00b4ff;
+      --cyan2: #5eebff;
+      --mint: #00ffa8;
+      --gold: #ffd24a;
+      --orange: #ff6a2e;
+      --f-display: 'Rajdhani', sans-serif;
+      --f-body: 'Inter', sans-serif;
+      --f-mono: 'JetBrains Mono', monospace;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg0);
+      color: var(--ink);
+      font-family: var(--f-body);
+      line-height: 1.6;
+      overflow-x: hidden;
+      min-height: 100vh;
+    }
+
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background:
+        radial-gradient(ellipse 900px 600px at 85% -10%, rgba(0,180,255,.10), transparent 60%),
+        radial-gradient(ellipse 700px 500px at 0% 90%, rgba(0,255,168,.05), transparent 60%);
+      pointer-events: none; z-index: 0;
+    }
+    body::after {
+      content: '';
+      position: fixed; inset: 0;
+      background-image:
+        linear-gradient(var(--line-soft) 1px, transparent 1px),
+        linear-gradient(90deg, var(--line-soft) 1px, transparent 1px);
+      background-size: 64px 64px;
+      mask-image: radial-gradient(ellipse 70% 50% at 50% 0%, rgba(0,0,0,.5), transparent 70%);
+      pointer-events: none; z-index: 0; opacity: .5;
+    }
+
+    .wrap { max-width: 1180px; margin: 0 auto; padding: 0 28px; position: relative; z-index: 1; }
+    a { color: inherit; text-decoration: none; }
+
+    .eyebrow {
+      font-family: var(--f-mono); font-size: .72rem;
+      letter-spacing: .22em; text-transform: uppercase;
+      color: var(--cyan); display: flex; align-items: center; gap: 10px;
+    }
+    .eyebrow::before {
+      content: ''; width: 7px; height: 7px; border-radius: 50%;
+      background: var(--cyan); box-shadow: 0 0 10px var(--cyan); flex: none;
+    }
+    h1,h2,h3,h4 { font-family: var(--f-display); font-weight: 700; letter-spacing: .01em; }
+
+    /* ── NAVBAR ── */
+    header.nav {
+      position: sticky; top: 0; z-index: 100;
+      backdrop-filter: blur(14px) saturate(140%);
+      background: rgba(4,8,16,.62);
+      border-bottom: 1px solid var(--line);
+    }
+    .nav-inner {
+      max-width: 1180px; margin: 0 auto; padding: 0 28px;
+      height: 72px; display: flex; align-items: center;
+      justify-content: space-between; gap: 24px;
+    }
+    .logo {
+      display: flex; align-items: center; gap: 12px;
+      font-family: var(--f-display); font-weight: 700;
+      font-size: 1.35rem; letter-spacing: .06em;
+    }
+    .logo-mark { width: 34px; height: 34px; flex: none; }
+    .logo-mark img { width: 100%; height: 100%; display: block; border-radius: 50%; object-fit: cover; }
+    .logo small {
+      display: block; font-family: var(--f-mono); font-size: .6rem;
+      letter-spacing: .2em; color: var(--dim); font-weight: 400; margin-top: 1px;
+    }
+    .nav-links { display: flex; align-items: center; gap: 30px; font-size: .92rem; font-weight: 500; }
+    .nav-links a { color: var(--dim); padding: 6px 0; transition: color .15s; }
+    .nav-links a:hover { color: var(--ink); }
+    .nav-links a.active { color: var(--ink); }
+    .nav-actions { display: flex; align-items: center; gap: 12px; }
+
+    .btn {
+      font-family: var(--f-display); font-weight: 600; font-size: .88rem;
+      letter-spacing: .04em; padding: 10px 20px; border-radius: 7px;
+      border: 1px solid var(--line); cursor: pointer; transition: all .15s;
+      display: inline-flex; align-items: center; gap: 8px; white-space: nowrap;
+    }
+    .btn-ghost { color: var(--ink); background: transparent; }
+    .btn-ghost:hover { border-color: var(--cyan); color: var(--cyan2); }
+    .btn-solid {
+      background: linear-gradient(135deg, var(--cyan), #0090e0);
+      border-color: transparent; color: #04101c;
+      box-shadow: 0 0 0 1px rgba(0,180,255,.3), 0 8px 24px -8px rgba(0,180,255,.6);
+    }
+    .btn-solid:hover { filter: brightness(1.12); }
+    .btn-vip {
+      background: linear-gradient(135deg, var(--gold), #ff9a4a);
+      border-color: transparent; color: #241200;
+      box-shadow: 0 0 0 1px rgba(255,210,74,.35), 0 8px 24px -8px rgba(255,170,60,.55);
+    }
+    .btn-vip:hover { filter: brightness(1.1); }
+    .btn-vip svg { width: 15px; height: 15px; }
+    .btn-sm { padding: 8px 16px; font-size: .82rem; }
+    .btn-lg { padding: 14px 28px; font-size: 1.05rem; width: 100%; justify-content: center; margin-top: 18px; }
+    .nav-burger { display: none; flex-direction: column; gap: 5px; cursor: pointer; background: none; border: none; }
+    .nav-burger span { width: 22px; height: 2px; background: var(--ink); }
+
+    /* ── PAGE LAYOUT ── */
+    .profile-section { padding: 50px 0 40px; }
+    .profile-grid {
+      display: grid;
+      grid-template-columns: 300px 1fr;
+      gap: 28px;
+      align-items: start;
+    }
+
+    /* ── CARD ── */
+    .card {
+      background: linear-gradient(160deg, var(--bg2), var(--bg1));
+      border: 1px solid var(--line); border-radius: 14px;
+      position: relative; overflow: hidden;
+    }
+    .card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(0,180,255,.5), transparent);
+    }
+    .card-inner { padding: 28px; }
+
+    /* ── LEFT SIDEBAR ── */
+    .sidebar { display: flex; flex-direction: column; gap: 20px; }
+
+    .avatar-block { text-align: center; padding-bottom: 22px; border-bottom: 1px solid var(--line-soft); margin-bottom: 20px; }
+    .avatar-ring {
+      position: relative; display: inline-block; margin-bottom: 16px;
+    }
+    .avatar-ring img {
+      width: 110px; height: 110px; border-radius: 50%; object-fit: cover;
+      border: 2px solid var(--cyan);
+      box-shadow: 0 0 0 6px rgba(0,180,255,.08), 0 0 28px rgba(0,180,255,.25);
+      display: block;
+    }
+    .prof-name {
+      font-family: var(--f-display); font-size: 1.5rem; font-weight: 700;
+      letter-spacing: .06em; text-transform: uppercase; margin-bottom: 3px;
+    }
+    .avatar-change {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-family: var(--f-mono); font-size: .75rem; letter-spacing: .08em;
+      color: var(--dim); padding: 9px 18px; border-radius: 7px;
+      border: 1px solid var(--line); cursor: pointer; transition: all .15s;
+    }
+    .avatar-change:hover { color: var(--cyan2); border-color: rgba(0,180,255,.35); }
+    .avatar-change svg { width: 13px; height: 13px; flex: none; }
+
+    /* Side nav */
+    .side-nav { display: flex; flex-direction: column; gap: 3px; }
+    .side-nav a {
+      display: flex; align-items: center; gap: 12px;
+      padding: 11px 14px; border-radius: 8px; border: 1px solid transparent;
+      font-family: var(--f-mono); font-size: .78rem; letter-spacing: .06em;
+      color: var(--dim); transition: all .15s;
+    }
+    .side-nav a:hover { color: var(--ink); background: rgba(0,180,255,.05); border-color: var(--line); }
+    .side-nav a.active { color: var(--cyan2); background: rgba(0,180,255,.08); border-color: rgba(0,180,255,.2); }
+    .side-nav svg { width: 15px; height: 15px; flex: none; }
+    .side-nav .sep { height: 1px; background: var(--line-soft); margin: 6px 0; }
+
+    /* ── RIGHT CONTENT ── */
+    .content { display: flex; flex-direction: column; gap: 22px; }
+
+    /* Info rows */
+    .info-list { display: flex; flex-direction: column; gap: 0; }
+    .info-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 13px 0; border-bottom: 1px solid var(--line-soft);
+      font-size: .88rem;
+    }
+    .info-row:last-child { border-bottom: none; }
+    .info-row span:first-child { font-family: var(--f-mono); font-size: .76rem; color: var(--dim); letter-spacing: .06em; }
+    .info-row span:last-child { font-family: var(--f-mono); font-size: .8rem; }
+
+    /* VIP badge */
+    .vip-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 4px 12px; border-radius: 4px;
+      background: rgba(255,210,74,.1); color: var(--gold);
+      border: 1px solid rgba(255,210,74,.25);
+      font-family: var(--f-mono); font-size: .7rem; font-weight: 600;
+      letter-spacing: .1em; text-transform: uppercase;
+    }
+    .vip-badge svg { width: 11px; height: 11px; }
+
+    /* ── VIP PROMO BLOCK ── */
+    .vip {
+      background: linear-gradient(135deg, rgba(16, 26, 40, 0.65), rgba(10, 15, 24, 0.85));
+      border: 1px solid rgba(255, 210, 74, 0.2);
+      border-radius: 16px; padding: 40px;
+      display: grid; grid-template-columns: 1fr 320px; gap: 40px;
+      align-items: center; position: relative; margin-bottom: 90px;
+      box-shadow: 0 20px 50px rgba(255, 210, 74, 0.03);
+    }
+    .vip::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255,210,74,.35), transparent);
+    }
+    .vip h2 { font-size: 2.2rem; color: var(--ink); margin-top: 8px; font-weight: 700; }
+    .vip p { color: var(--dim); max-width: 620px; margin-top: 10px; font-size: 0.95rem; }
+    .vip-feats { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 24px; }
+    .vip-feats div { display: flex; align-items: center; gap: 10px; font-size: .9rem; color: var(--ink); }
+    .vip-feats svg { width: 16px; height: 16px; color: var(--gold); flex: none; }
+    .vip-price {
+      background: rgba(255, 210, 74, 0.02); border: 1px solid rgba(255, 210, 74, 0.08);
+      border-radius: 12px; padding: 30px; text-align: center;
+    }
+    .vip-price .price { font-family: var(--f-display); font-size: 3.2rem; font-weight: 700; color: var(--gold); line-height: 1; }
+    .vip-price .price span { font-size: 1.1rem; color: var(--dim); font-weight: 500; font-family: var(--f-body); }
+
+    /* ── FOOTER ── */
+    footer {
+      border-top: 1px solid var(--line); padding: 28px 0;
+      background: linear-gradient(180deg, transparent, rgba(0,180,255,.02));
+    }
+    .foot-row {
+      display: flex; justify-content: space-between; align-items: center;
+      flex-wrap: wrap; gap: 14px;
+    }
+    .foot-copy { font-family: var(--f-mono); font-size: .72rem; color: var(--dim2); }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 900px) {
+      .profile-grid { grid-template-columns: 1fr; }
+      .vip { grid-template-columns: 1fr; gap: 30px; padding: 30px; }
+      .vip-feats { grid-template-columns: 1fr; gap: 12px; }
+    }
+    @media (max-width: 680px) {
+      .nav-links { display: none; }
+      .nav-burger { display: flex; }
+      .wrap { padding: 0 16px; }
+    }
+
+    /* reveal */
+    .reveal { opacity: 0; transform: translateY(22px); transition: opacity .55s ease, transform .55s ease; }
+    .reveal.in { opacity: 1; transform: translateY(0); }
+  </style>
+</head>
+<body>
+
+<!-- ══ NAVBAR ══ -->
+<header class="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="logo">
+      <span class="logo-mark"><img src="jarvis-logo.png" alt="JARVIS"></span>
+      <span>JARVIS<small>VOICE OS</small></span>
+    </a>
+    <nav class="nav-links">
+      <a href="index.html#screens">Интерфейс</a>
+      <a href="index.html#commands">Команды</a>
+      <a href="updates.html">Обновления</a>
+      <a href="index.html#vip">VIP</a>
+      <a href="profile.html" class="active">Профиль</a>
+      <a href="#" onclick="openModal('authorModal'); return false;">О разработчике</a>
+    </nav>
+    <div class="nav-actions">
+      <button class="btn btn-ghost btn-sm" onclick="openModal('settingsModal')">Настройки</button>
+      <button class="btn btn-ghost btn-sm" style="border-color:rgba(255,60,90,.35); color:#ff3c5a;" onclick="logout()">Выйти</button>
+      <button class="nav-burger" aria-label="Меню"><span></span><span></span><span></span></button>
+    </div>
+  </div>
+</header>
+
+<!-- ══ PROFILE ══ -->
+<div class="wrap">
+  <div class="profile-section">
+    <div class="profile-grid">
+
+      <!-- ── SIDEBAR ── -->
+      <aside class="sidebar">
+        <!-- Avatar card -->
+        <div class="card reveal">
+          <div class="card-inner">
+            <div class="avatar-block">
+              <div class="avatar-ring">
+                <img src="jarvis-logo.png" id="avatarImg" alt="Avatar">
+              </div>
+              <div class="prof-name" id="profName">TonyStark</div>
+
+              <label class="avatar-change">
+                <input type="file" accept="image/*" style="display:none;" onchange="previewAvatar(this)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+                Сменить облик
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Nav card -->
+        <div class="card reveal" style="padding: 10px 10px;">
+          <nav class="side-nav">
+            <a href="profile.html" class="active">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+              Профиль
+            </a>
+            <a href="updates.html">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+              Обновления
+            </a>
+            <a href="#">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 010 14.14M4.93 4.93a10 10 0 000 14.14"/></svg>
+              Поддержка
+            </a>
+
+            <!-- Кнопка появляется только для is_admin=true -->
+            <a href="admin.html" id="adminNavLink" style="display:none; color:var(--orange);">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+              Админ панель
+            </a>
+
+            <div class="sep"></div>
+            <a href="#" onclick="openModal('settingsModal'); return false;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+              Настройки
+            </a>
+            <a href="#" onclick="logout(); return false;" style="color: rgba(255,60,90,.8);">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+              Выйти
+            </a>
+          </nav>
+        </div>
+      </aside>
+
+      <!-- ── CONTENT ── -->
+      <div class="content">
+        <!-- Account info -->
+        <div class="card reveal">
+          <div class="card-inner">
+            <div style="margin-bottom:18px;">
+              <div class="eyebrow">Аккаунт</div>
+              <h3 style="font-size:1.15rem; text-transform:uppercase; letter-spacing:.06em; margin-top:8px;">Данные профиля</h3>
+            </div>
+            <div class="info-list">
+              <div class="info-row">
+                <span>Email</span>
+                <span style="color:var(--ink);" id="profEmail">—</span>
+              </div>
+              <div class="info-row">
+                <span>Статус подписки</span>
+                <span class="vip-badge" id="profVipBadge">
+                  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 7L8 10L12 4L16 10L21 7L19 18H5L3 7Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+                  <span id="profVipLabel">VIP Active</span>
+                </span>
+              </div>
+              
+              <!-- Копирование ВИП кода -->
+              <div class="info-row" id="profVipCodeRow" style="display:none;">
+                <span>VIP-код (Лицензия)</span>
+                <span style="display: inline-flex; align-items: center; gap: 10px;">
+                  <span id="profVipCode" data-code="" data-visible="false" style="color:var(--gold); font-family:var(--f-mono); font-weight:600; letter-spacing:.05em; min-width:11ch; display:inline-block;">—</span>
+                  <button onclick="toggleVipCodeVisibility()" class="btn btn-ghost" id="toggleVipCodeBtn" type="button" title="Показать код" style="padding: 5px 7px; font-size: .7rem; border-color: rgba(0,180,255,0.25); line-height:0;">
+                    <svg id="vipCodeEyeIcon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                      <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                  </button>
+                  <button onclick="copyVipCode()" class="btn btn-ghost" id="copyBtn" style="padding: 3px 8px; font-size: .7rem; border-color: rgba(0,180,255,0.25);">Копировать</button>
+                </span>
+              </div>
+
+              <div class="info-row" id="profVipExpiryRow" style="display:none;">
+                <span>VIP действует до</span>
+                <span style="color:var(--ink);" id="profVipExpiry">—</span>
+              </div>
+              <div class="info-row">
+                <span>Дата регистрации</span>
+                <span style="color:var(--ink);" id="profCreatedAt">—</span>
+              </div>
+              <div class="info-row">
+                <span>Подключённых ПК</span>
+                <span style="color:var(--ink);" id="profDevices">— / —</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ══ VIP BANNER SECTION ══ -->
+<div class="wrap" id="vip">
+  <section>
+    <div class="vip reveal">
+      <div>
+        <div class="eyebrow" style="color:#ffd24a;">JARVIS VIP</div>
+        <h2>Расширьте возможности ассистента</h2>
+        <p>Безлимитные запросы к ИИ, приоритетные модели, расширенный голосовой банк и кастомные темы интерфейса — для тех, кто живёт с Jarvis каждый день.</p>
+        <div class="vip-feats" style="margin-top:24px;">
+          <div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg> Безлимитные запросы к Gemini</div>
+          <div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg> Приоритетная очередь распознавания</div>
+          <div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg> Дополнительные голоса и темы HUD</div>
+          <div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg> Ранний доступ к новым функциям</div>
+        </div>
+      </div>
+      <div class="vip-price">
+        <div class="price">$1<span>/ месяц</span></div>
+        <p style="font-size:.85rem; margin-top:8px;">или $10 за год — экономия 17%</p>
+        <button onclick="openVipPurchase()" class="btn btn-vip btn-lg" id="profVipCtaBtn">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 7L8 10L12 4L16 10L21 7L19 18H5L3 7Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+          <span id="profVipCtaLabel">Получить VIP</span>
+        </button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<div id="vipPurchaseModal" class="modal-overlay" onclick="closeModal(event, 'vipPurchaseModal')">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeVipPurchaseModal()">×</button>
+    <div class="eyebrow" style="color:#ffd24a;">JARVIS VIP</div>
+    <h3 id="vipPurchaseTitle" style="font-size:1.8rem; margin-top:10px; text-transform:uppercase;">Оформить подписку</h3>
+
+    <div id="vipPurchaseStepPlan">
+      <p id="vipPurchaseStepPlanHint" style="color:var(--dim); font-size:.9rem; margin-top:6px;">Выберите тариф — VIP активируется сразу после оплаты.</p>
+
+      <div class="vip-plan-options" style="display:flex; flex-direction:column; gap:10px; margin-top:18px;">
+        <label class="vip-plan-option" style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px 16px; border:1px solid var(--line); border-radius:10px; cursor:pointer; transition:border-color .15s;">
+          <span style="display:flex; align-items:center; gap:10px;">
+            <input type="radio" name="vipPlanChoice" value="month" checked style="width:16px; height:16px; accent-color:#ffd24a;">
+            <span>
+              <span style="display:block; font-weight:600;">1 месяц</span>
+              <span style="display:block; color:var(--dim); font-size:.78rem;">Продление в любой момент</span>
+            </span>
+          </span>
+          <span style="font-family:var(--f-mono); font-weight:700; color:#ffd24a;">$1</span>
+        </label>
+
+        <label class="vip-plan-option" style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px 16px; border:1px solid rgba(255,210,74,.4); border-radius:10px; cursor:pointer; background:rgba(255,210,74,.05);">
+          <span style="display:flex; align-items:center; gap:10px;">
+            <input type="radio" name="vipPlanChoice" value="year" style="width:16px; height:16px; accent-color:#ffd24a;">
+            <span>
+              <span style="display:block; font-weight:600;">1 год <span style="color:#00ffa8; font-size:.72rem; font-weight:700;">−17%</span></span>
+              <span style="display:block; color:var(--dim); font-size:.78rem;">Выгоднее, чем платить помесячно</span>
+            </span>
+          </span>
+          <span style="font-family:var(--f-mono); font-weight:700; color:#ffd24a;">$10</span>
+        </label>
+      </div>
+
+      <button id="vipPurchaseSubmitBtn" onclick="submitVipPurchase()" class="btn btn-vip btn-lg" style="width:100%; justify-content:center; margin-top:22px;">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="16" height="16"><rect x="2" y="5" width="20" height="14" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M2 10H22" stroke="currentColor" stroke-width="1.8"/></svg>
+        <span id="vipPurchaseSubmitLabel">Оплатить $1</span>
+      </button>
+    </div>
+
+    <div id="vipPurchaseStepProcessing" style="display:none; text-align:center; padding:30px 0;">
+      <div class="vip-spinner" style="width:42px; height:42px; margin:0 auto 18px; border:3px solid rgba(255,210,74,.2); border-top-color:#ffd24a; border-radius:50%; animation:vipSpin .8s linear infinite;"></div>
+      <p style="color:var(--ink); font-weight:600;">Обработка платежа…</p>
+      <p style="color:var(--dim); font-size:.82rem; margin-top:4px;">Это займёт всего пару секунд</p>
+    </div>
+
+    <div id="vipPurchaseStepSuccess" style="display:none; text-align:center; padding:10px 0;">
+      <div style="width:54px; height:54px; margin:0 auto 16px; border-radius:50%; background:rgba(0,255,168,.1); display:flex; align-items:center; justify-content:center; border:1px solid rgba(0,255,168,.3);">
+        <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="#00ffa8" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+      </div>
+      <h4 id="vipPurchaseSuccessTitle" style="font-size:1.2rem; text-transform:uppercase;">VIP активирован!</h4>
+      <p id="vipPurchaseSuccessMsg" style="color:var(--dim); font-size:.88rem; margin-top:6px;"></p>
+
+      <div style="margin-top:18px; padding:14px; background:var(--bg2); border:1px solid var(--line); border-radius:10px;">
+        <div style="color:var(--dim); font-size:.72rem; text-transform:uppercase; letter-spacing:.05em;">Ваш VIP-код</div>
+        <div style="display:flex; align-items:center; justify-content:center; gap:10px; margin-top:8px;">
+          <span id="vipPurchaseCode" style="font-family:var(--f-mono); font-weight:700; color:#ffd24a; font-size:1.05rem; letter-spacing:.04em;">—</span>
+          <button onclick="copyVipPurchaseCode()" id="vipPurchaseCopyBtn" class="btn btn-ghost" style="padding:4px 10px; font-size:.72rem;">Копировать</button>
+        </div>
+        <p style="color:var(--dim); font-size:.74rem; margin-top:8px;">Введите этот код в приложении JARVIS. Код также сохранён в блоке выше.</p>
+      </div>
+
+      <button onclick="closeVipPurchaseModal()" class="btn btn-solid" style="width:100%; justify-content:center; margin-top:18px;">Готово</button>
+    </div>
+
+    <div id="vipPurchaseStepError" style="display:none; text-align:center; padding:20px 0;">
+      <p id="vipPurchaseErrorMsg" style="color:var(--orange); font-size:.9rem;"></p>
+      <button onclick="resetVipPurchaseModal()" class="btn btn-ghost" style="margin-top:14px;">Попробовать снова</button>
+    </div>
+  </div>
+</div>
+<style>
+@keyframes vipSpin { to { transform: rotate(360deg); } }
+.vip-plan-option:has(input:checked) { border-color: #ffd24a !important; }
+</style>
+
+<!-- ══ SETTINGS MODAL ══ -->
+<div id="settingsModal" class="modal-overlay" onclick="closeModal(event,'settingsModal')">
+  <div class="modal-box">
+    <button class="modal-close" onclick="document.getElementById('settingsModal').classList.remove('active')">×</button>
+    <div class="eyebrow">Настройки</div>
+    <h3 style="font-size:1.8rem; margin-top:10px; text-transform:uppercase;">Настройки профиля</h3>
+
+    <form class="auth-form" id="settingsForm" style="margin-top:24px;" onsubmit="handleSettingsSave(event)">
+      <div class="form-group">
+        <label>Имя пользователя</label>
+        <input type="text" id="settingsUsername" required minlength="3" maxlength="50">
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="settingsEmail" disabled
+               style="opacity:.55; cursor:not-allowed;"
+               title="Email указывается при регистрации и не может быть изменён">
+      </div>
+      <button type="submit" class="btn btn-solid" style="justify-content:center; margin-top:6px;">Сохранить имя</button>
+    </form>
+
+    <div style="height:1px; background:var(--line-soft); margin:26px 0;"></div>
+
+    <h3 style="font-size:1.05rem; text-transform:uppercase; letter-spacing:.06em; margin-bottom:18px;">Смена пароля</h3>
+    <form class="auth-form" id="passwordForm" onsubmit="handlePasswordChange(event)">
+      <div class="form-group">
+        <label>Текущий пароль</label>
+        <input type="password" id="currentPassword" placeholder="••••••••" required>
+      </div>
+      <div class="form-group">
+        <label>Новый пароль</label>
+        <input type="password" id="newPassword" placeholder="Минимум 8 символов" required minlength="8">
+      </div>
+      <button type="submit" class="btn btn-ghost" style="justify-content:center; margin-top:6px;">Изменить пароль</button>
+    </form>
+  </div>
+</div>
+
+<!-- ══ FOOTER ══ -->
+<footer>
+  <div class="wrap">
+    <div class="foot-row">
+      <div class="logo" style="font-size:1.1rem;">
+        <span class="logo-mark"><img src="jarvis-logo.png" alt="JARVIS"></span>
+        <span>JARVIS<small>VOICE OS · v0.9</small></span>
+      </div>
+      <span class="foot-copy">© 2026 JARVIS VOICE OS. Все права защищены.</span>
+    </div>
+  </div>
+</footer>
+
+<style>
+  /* Modal — exact copy from index.html */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(3,6,12,.85);
+    backdrop-filter: blur(16px); z-index: 1000;
+    display: none; align-items: center; justify-content: center; padding: 20px;
+    opacity: 0; transition: opacity .3s ease;
+  }
+  .modal-overlay.active { display: flex; opacity: 1; }
+  .modal-box {
+    background: linear-gradient(160deg, var(--bg2), var(--bg1));
+    border: 1px solid var(--line); border-radius: 16px;
+    width: 100%; max-width: 460px; padding: 40px; position: relative;
+    box-shadow: 0 24px 60px rgba(0,180,255,.1);
+    transform: translateY(-20px); transition: transform .3s ease;
+  }
+  .modal-overlay.active .modal-box { transform: translateY(0); }
+  .modal-close {
+    position: absolute; top: 20px; right: 20px;
+    background: none; border: none; color: var(--dim);
+    cursor: pointer; font-size: 1.5rem; transition: color .15s;
+  }
+  .modal-close:hover { color: var(--ink); }
+  .auth-form { display: flex; flex-direction: column; gap: 18px; }
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-group label {
+    font-family: var(--f-mono); font-size: .72rem;
+    text-transform: uppercase; color: var(--dim); letter-spacing: .1em;
+  }
+  .auth-form input {
+    background: var(--bg0); border: 1px solid var(--line); border-radius: 8px;
+    padding: 12px 16px; color: var(--ink); font-family: var(--f-body);
+    font-size: .92rem; outline: none; transition: border-color .15s;
+  }
+  .auth-form input:focus { border-color: var(--cyan); }
+</style>
+
+<script>
+  // Раньше здесь был жёстко зашитый 'http://localhost:8000/api' —
+  // фронтенд ломался при любом деплое кроме локальной разработки.
+  // Теперь адрес берётся из window.JARVIS_API_BASE (можно задать одним
+  // <script>window.JARVIS_API_BASE='https://api.example.com/api'
+  // перед этим файлом при деплое), а если он не задан — используется
+  // тот же хост, с которого открыта страница, порт 8000 (как раньше).
+  const API = window.JARVIS_API_BASE || `${location.protocol}//${location.hostname}:8000/api`;
+
+  const Token = {
+    get access()  { return localStorage.getItem('jrv_access'); },
+    get refresh() { return localStorage.getItem('jrv_refresh'); },
+    set(a, r) {
+      localStorage.setItem('jrv_access',  a);
+      localStorage.setItem('jrv_refresh', r);
+    },
+    clear() {
+      localStorage.removeItem('jrv_access');
+      localStorage.removeItem('jrv_refresh');
+    },
+  };
+
+  function formatApiError(data, fallback) {
+    const d = data && data.detail;
+    if (!d) return fallback || 'Ошибка сервера';
+    if (typeof d === 'string') return d;
+
+    if (Array.isArray(d)) {
+      const fieldNames = {
+        username: 'Имя пользователя',
+        email: 'Email',
+        current_password: 'Текущий пароль',
+        new_password: 'Новый пароль',
+        password: 'Пароль',
+      };
+      const lines = d.map(item => {
+        let msg = (item && item.msg) ? String(item.msg) : 'Некорректное значение';
+        msg = msg.replace(/^Value error,\s*/i, '');
+        const loc = Array.isArray(item && item.loc) ? item.loc[item.loc.length - 1] : '';
+        const field = fieldNames[loc] || loc;
+        return field ? `${field}: ${msg}` : msg;
+      });
+      return [...new Set(lines)].join('; ');
+    }
+
+    if (typeof d === 'object') return JSON.stringify(d);
+    return fallback || 'Ошибка сервера';
+  }
+
+  async function apiFetch(path, opts = {}) {
+    const headers = { 'Content-Type': 'application/json', ...opts.headers };
+    if (Token.access) headers['Authorization'] = `Bearer ${Token.access}`;
+
+    let res = await fetch(API + path, { ...opts, headers });
+
+    if (res.status === 401 && Token.refresh) {
+      const rr = await fetch(API + '/auth/refresh', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refresh_token: Token.refresh }),
+      });
+      if (rr.ok) {
+        const { access_token } = await rr.json();
+        Token.set(access_token, Token.refresh);
+        headers['Authorization'] = `Bearer ${access_token}`;
+        res = await fetch(API + path, { ...opts, headers });
+      } else {
+        Token.clear();
+        window.location.href = 'index.html';
+      }
+    }
+    return res;
+  }
+
+  async function logout() {
+    await apiFetch('/auth/logout', { method: 'POST' }).catch(() => {});
+    Token.clear();
+    window.location.href = 'index.html';
+  }
+
+  function formatDate(iso) {
+    if (!iso) return '—';
+    try {
+      const d = new Date(iso);
+      return d.toLocaleDateString('ru-RU', { day: '2-digit', month: 'long', year: 'numeric' });
+    } catch { return '—'; }
+  }
+
+  // ── Маска кода и переключение видимости (показать/скрыть «глазом») ──
+  function maskCode(code) {
+    if (!code) return '—';
+    // Сохраняем структуру JRVS-XXXX-XXXX-XXXX, просто заменяя символы кода на «•»,
+    // чтобы маска была наглядной, но не выдавала длину/формат отдельных групп.
+    return code.replace(/[A-Za-z0-9]/g, '•');
+  }
+
+  function renderVipCodeDisplay() {
+    const el = document.getElementById('profVipCode');
+    const code = el.dataset.code || '';
+    const visible = el.dataset.visible === 'true';
+    el.textContent = code ? (visible ? code : maskCode(code)) : '—';
+
+    const btn = document.getElementById('toggleVipCodeBtn');
+    const icon = document.getElementById('vipCodeEyeIcon');
+    btn.title = visible ? 'Скрыть код' : 'Показать код';
+    icon.innerHTML = visible
+      // «глаз перечёркнут» — код сейчас виден, клик скроет
+      ? '<path d="M17.94 17.94A10.94 10.94 0 0112 20c-7 0-11-8-11-8a21.8 21.8 0 015.06-6.06M9.9 4.24A10.94 10.94 0 0112 4c7 0 11 8 11 8a21.8 21.8 0 01-3.22 4.4M14.12 14.12a3 3 0 11-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line>'
+      // «открытый глаз» — код сейчас скрыт, клик покажет
+      : '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle>';
+  }
+
+  function toggleVipCodeVisibility() {
+    const el = document.getElementById('profVipCode');
+    if (!el.dataset.code) return;
+    el.dataset.visible = el.dataset.visible === 'true' ? 'false' : 'true';
+    renderVipCodeDisplay();
+  }
+
+  // ── Копирование VIP-кода в буфер обмена (копирует настоящий код, ──
+  // даже если на экране сейчас отображается маска из «•») ────────────
+  function copyVipCode() {
+    const el = document.getElementById('profVipCode');
+    const codeText = el.dataset.code;
+    if (!codeText) return;
+
+    navigator.clipboard.writeText(codeText).then(() => {
+      const btn = document.getElementById('copyBtn');
+      const originalText = btn.textContent;
+      btn.textContent = 'Скопировано! ✓';
+      btn.style.color = 'var(--mint)';
+      btn.style.borderColor = 'var(--mint)';
+      
+      setTimeout(() => {
+        btn.textContent = originalText;
+        btn.style.color = '';
+        btn.style.borderColor = '';
+      }, 2000);
+    }).catch(() => {
+      alert('Не удалось скопировать код. Нажмите на значок глаза, чтобы открыть код, и выделите его вручную.');
+    });
+  }
+
+  async function loadProfile() {
+    const res = await apiFetch('/users/profile');
+    if (!res.ok) {
+      window.location.href = 'index.html';
+      return;
+    }
+    const data = await res.json();
+
+    document.getElementById('profName').textContent = data.username || 'Пользователь';
+
+    const adminLink = document.getElementById('adminNavLink');
+    if (data.is_admin) adminLink.style.display = '';
+
+    document.getElementById('profEmail').textContent = data.email || '—';
+
+    // VIP статус
+    const isVip = !!(data.vip && data.vip.is_vip);
+    const badge = document.getElementById('profVipBadge');
+    const vipLabel = document.getElementById('profVipLabel');
+    if (isVip) {
+      badge.className = 'vip-badge';
+      badge.style.color = '';
+      badge.style.borderColor = '';
+      badge.style.background = '';
+      vipLabel.textContent = 'VIP Active';
+    } else {
+      badge.className = 'vip-badge';
+      badge.style.color = 'var(--dim)';
+      badge.style.borderColor = 'var(--dim2)';
+      badge.style.background = 'rgba(108,132,160,.06)';
+      vipLabel.textContent = 'FREE';
+    }
+
+    // Отображение и заполнение VIP-кода/лицензии (по умолчанию скрыт под маской)
+    const codeRow = document.getElementById('profVipCode');
+    const codeRowWrap = document.getElementById('profVipCodeRow');
+    if (isVip) {
+      codeRowWrap.style.display = '';
+      // Проверяем наличие ключа в объекте vip или в корне ответа
+      const key = (data.vip && data.vip.key_value) || data.vip_code || '';
+      codeRow.dataset.code = key;
+      codeRow.dataset.visible = 'false'; // при каждой загрузке профиля код снова скрыт
+      renderVipCodeDisplay();
+    } else {
+      codeRowWrap.style.display = 'none';
+      codeRow.dataset.code = '';
+    }
+
+    // Дата окончания VIP
+    const expiryRow = document.getElementById('profVipExpiryRow');
+    if (isVip) {
+      expiryRow.style.display = '';
+      document.getElementById('profVipExpiry').textContent =
+        data.vip.expires_at ? formatDate(data.vip.expires_at) : 'Бессрочно';
+    } else {
+      expiryRow.style.display = 'none';
+    }
+
+    document.getElementById('profCreatedAt').textContent = formatDate(data.created_at);
+
+    const maxDevices = isVip ? 3 : 1;
+    document.getElementById('profDevices').textContent =
+      `${data.devices_count ?? 0} / ${maxDevices} устройств`;
+
+    document.getElementById('settingsUsername').value = data.username || '';
+    document.getElementById('settingsEmail').value     = data.email || '';
+
+    // ── Состояние для модалки покупки VIP: меняем текст кнопки/заголовков,
+    // если юзер уже VIP — это «продление», а не «первая покупка» ─────────
+    _currentIsVip = isVip;
+    const ctaLabel = document.getElementById('profVipCtaLabel');
+    if (ctaLabel) ctaLabel.textContent = isVip ? 'Продлить VIP' : 'Получить VIP';
+  }
+
+  async function handleSettingsSave(e) {
+    e.preventDefault();
+    const form = e.target;
+    const btn  = form.querySelector('[type="submit"]');
+    const original = btn.textContent;
+    const username = document.getElementById('settingsUsername').value.trim();
+
+    btn.textContent = 'Сохранение...';
+    btn.disabled = true;
+
+    try {
+      const res = await apiFetch('/users/profile', {
+        method: 'PUT',
+        body: JSON.stringify({ username }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        btn.textContent = 'Сохранено ✓';
+        await loadProfile();
+      } else {
+        showFormError(form, formatApiError(data, 'Ошибка сохранения'));
+        btn.textContent = original;
+        btn.disabled = false;
+        return;
+      }
+    } catch {
+      showFormError(form, 'Нет связи с сервером');
+      btn.textContent = original;
+      btn.disabled = false;
+      return;
+    }
+
+    setTimeout(() => { btn.textContent = original; btn.disabled = false; }, 1500);
+  }
+
+  // ── VIP: покупка (демо — сразу выдаёт VIP, пока нет платёжной системы) ──
+  // На странице профиля пользователь уже залогинен, поэтому, в отличие от
+  // главной страницы, шаг проверки/подсказки «войдите сначала» не нужен.
+  let _currentIsVip = false;
+  let _vipPurchaseLastCode = '';
+
+  function openVipPurchase() {
+    resetVipPurchaseModal();
+    openModal('vipPurchaseModal');
+  }
+
+  function closeVipPurchaseModal() {
+    document.getElementById('vipPurchaseModal').classList.remove('active');
+  }
+
+  function resetVipPurchaseModal() {
+    document.getElementById('vipPurchaseStepPlan').style.display = '';
+    document.getElementById('vipPurchaseStepProcessing').style.display = 'none';
+    document.getElementById('vipPurchaseStepSuccess').style.display = 'none';
+    document.getElementById('vipPurchaseStepError').style.display = 'none';
+
+    document.getElementById('vipPurchaseTitle').textContent =
+      _currentIsVip ? 'Продлить подписку' : 'Оформить подписку';
+    document.getElementById('vipPurchaseStepPlanHint').textContent =
+      _currentIsVip
+        ? 'Выберите тариф — срок действия вашего текущего VIP-кода продлится сразу после оплаты.'
+        : 'Выберите тариф — VIP активируется сразу после оплаты.';
+
+    updateVipPurchasePrice();
+  }
+
+  function updateVipPurchasePrice() {
+    const plan = document.querySelector('input[name="vipPlanChoice"]:checked').value;
+    const label = document.getElementById('vipPurchaseSubmitLabel');
+    label.textContent = plan === 'year' ? 'Оплатить $10' : 'Оплатить $1';
+  }
+
+  document.querySelectorAll('input[name="vipPlanChoice"]').forEach(input => {
+    input.addEventListener('change', updateVipPurchasePrice);
+  });
+
+  async function submitVipPurchase() {
+    const plan = document.querySelector('input[name="vipPlanChoice"]:checked').value;
+
+    document.getElementById('vipPurchaseStepPlan').style.display = 'none';
+    document.getElementById('vipPurchaseStepProcessing').style.display = 'block';
+
+    // Небольшая имитация обработки платежа для реалистичности UX —
+    // реального списания денег нет, платёжная система пока не подключена.
+    const minDelay = new Promise(resolve => setTimeout(resolve, 1100));
+
+    try {
+      const [res] = await Promise.all([
+        apiFetch('/vip/purchase', {
+          method: 'POST',
+          body: JSON.stringify({ plan }),
+        }),
+        minDelay,
+      ]);
+
+      let data = {};
+      try { data = await res.json(); } catch (_) { /* пустой ответ */ }
+
+      document.getElementById('vipPurchaseStepProcessing').style.display = 'none';
+
+      if (!res.ok) {
+        document.getElementById('vipPurchaseErrorMsg').textContent =
+          formatApiError(data, 'Не удалось оформить VIP. Попробуйте ещё раз.');
+        document.getElementById('vipPurchaseStepError').style.display = 'block';
+        return;
+      }
+
+      _vipPurchaseLastCode = data.key_value;
+      document.getElementById('vipPurchaseSuccessTitle').textContent =
+        _currentIsVip ? 'VIP продлён!' : 'VIP активирован!';
+      document.getElementById('vipPurchaseSuccessMsg').textContent = data.message;
+      document.getElementById('vipPurchaseCode').textContent = data.key_value;
+      document.getElementById('vipPurchaseStepSuccess').style.display = 'block';
+
+      // Обновляем весь профиль — статус, дату истечения, маскированный код выше
+      await loadProfile();
+    } catch (err) {
+      document.getElementById('vipPurchaseStepProcessing').style.display = 'none';
+      document.getElementById('vipPurchaseErrorMsg').textContent = 'Не удалось подключиться к серверу';
+      document.getElementById('vipPurchaseStepError').style.display = 'block';
+    }
+  }
+
+  function copyVipPurchaseCode() {
+    if (!_vipPurchaseLastCode) return;
+    navigator.clipboard.writeText(_vipPurchaseLastCode).then(() => {
+      const btn = document.getElementById('vipPurchaseCopyBtn');
+      const original = btn.textContent;
+      btn.textContent = 'Скопировано ✓';
+      setTimeout(() => { btn.textContent = original; }, 1800);
+    });
+  }
+
+  async function handlePasswordChange(e) {
+    e.preventDefault();
+    const form = e.target;
+    const btn  = form.querySelector('[type="submit"]');
+    const original = btn.textContent;
+
+    const current_password = document.getElementById('currentPassword').value;
+    const new_password     = document.getElementById('newPassword').value;
+
+    btn.textContent = 'Изменение...';
+    btn.disabled = true;
+
+    try {
+      const res = await apiFetch('/users/change-password', {
+        method: 'POST',
+        body: JSON.stringify({ current_password, new_password }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        btn.textContent = 'Пароль изменён ✓';
+        form.reset();
+      } else {
+        showFormError(form, formatApiError(data, 'Ошибка смены пароля'));
+        btn.textContent = original;
+        btn.disabled = false;
+        return;
+      }
+    } catch {
+      showFormError(form, 'Нет связи с сервером');
+      btn.textContent = original;
+      btn.disabled = false;
+      return;
+    }
+
+    setTimeout(() => { btn.textContent = original; btn.disabled = false; }, 1800);
+  }
+
+  function showFormError(form, msg) {
+    let err = form.querySelector('.form-error');
+    if (!err) {
+      err = document.createElement('p');
+      err.className = 'form-error';
+      err.style.cssText = 'color:var(--orange);font-size:.82rem;margin-top:8px;';
+      form.appendChild(err);
+    }
+    err.textContent = msg;
+    setTimeout(() => err.remove(), 4000);
+  }
+
+  if (Token.access) {
+    loadProfile();
+  } else {
+    window.location.href = 'index.html';
+  }
+
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('in'); });
+  }, { threshold: .1 });
+  document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+
+  function previewAvatar(input) {
+    if (input.files && input.files[0]) {
+      const reader = new FileReader();
+      reader.onload = e => document.getElementById('avatarImg').src = e.target.result;
+      reader.readAsDataURL(input.files[0]);
+    }
+  }
+
+  function openModal(id) { document.getElementById(id).classList.add('active'); }
+  function closeModal(e, id) {
+    if (e.target === document.getElementById(id))
+      document.getElementById(id).classList.remove('active');
+  }
+
+  const burger = document.querySelector('.nav-burger');
+  const links  = document.querySelector('.nav-links');
+  burger.addEventListener('click', () => {
+    const open = links.style.display === 'flex';
+    links.style.display = open ? 'none' : 'flex';
+    links.style.position = 'absolute';
+    links.style.top = '72px'; links.style.left = '0'; links.style.right = '0';
+    links.style.flexDirection = 'column';
+    links.style.padding = '20px 28px';
+    links.style.background = 'rgba(4,8,16,.96)';
+    links.style.borderBottom = '1px solid var(--line)';
+    links.style.gap = '18px';
+  });
+</script>
+<!-- ═══ AUTHOR MODAL ═══ -->
+<div id="authorModal" class="modal-overlay" onclick="closeModal(event,'authorModal')">
+  <div class="modal-box" style="max-width:380px; text-align:center;">
+    <button class="modal-close" onclick="document.getElementById('authorModal').classList.remove('active')">×</button>
+
+    <div style="font-family:var(--f-mono);font-size:.7rem;letter-spacing:.22em;text-transform:uppercase;color:var(--cyan);display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:20px;">
+      <span style="width:6px;height:6px;border-radius:50%;background:var(--cyan);box-shadow:0 0 8px var(--cyan);flex:none;"></span>
+      Разработчик
+    </div>
+
+    <!-- Avatar -->
+    <div style="position:relative;width:96px;height:96px;margin:0 auto 16px;">
+      <img
+        id="authorAvatar"
+        src="https://avatars.githubusercontent.com/MWxAram?s=200"
+        alt="MWxAram"
+        style="width:96px;height:96px;border-radius:50%;border:2px solid rgba(0,212,255,.5);object-fit:cover;display:block;"
+        onerror="this.style.display='none';document.getElementById('authorAvatarFallback').style.display='flex';"
+      />
+      <div id="authorAvatarFallback" style="display:none;width:96px;height:96px;border-radius:50%;border:2px solid rgba(0,212,255,.5);background:var(--bg2);align-items:center;justify-content:center;font-size:2.2rem;">👤</div>
+      <div style="position:absolute;inset:-5px;border-radius:50%;border:1px solid rgba(0,212,255,.25);animation:authorPulse 2.4s ease-in-out infinite;pointer-events:none;"></div>
+    </div>
+
+    <h3 style="font-family:var(--f-display);font-size:1.5rem;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;">MWxAram</h3>
+    <p style="font-family:var(--f-mono);font-size:.72rem;color:var(--dim);letter-spacing:.12em;margin-bottom:20px;">Создатель JARVIS AI Assistant</p>
+
+    <div style="height:1px;background:linear-gradient(to right,transparent,rgba(0,212,255,.3),transparent);margin-bottom:20px;"></div>
+
+    <a
+      href="https://github.com/MWxAram"
+      target="_blank"
+      rel="noopener"
+      style="display:inline-flex;align-items:center;gap:9px;padding:11px 24px;background:rgba(0,180,255,.1);border:1px solid rgba(0,212,255,.3);border-radius:8px;color:var(--cyan);font-family:var(--f-mono);font-size:.82rem;font-weight:600;letter-spacing:.04em;text-decoration:none;transition:all .2s ease;"
+      onmouseover="this.style.background='rgba(0,212,255,.2)';this.style.borderColor='var(--cyan)';this.style.color='var(--ink)';"
+      onmouseout="this.style.background='rgba(0,180,255,.1)';this.style.borderColor='rgba(0,212,255,.3)';this.style.color='var(--cyan)';"
+    >
+      <svg viewBox="0 0 24 24" style="width:15px;height:15px;fill:currentColor;flex:none;"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+      GitHub: MWxAram
+    </a>
+
+    <p style="font-family:var(--f-mono);font-size:.68rem;color:rgba(255,255,255,.2);letter-spacing:.08em;margin-top:18px;">© 2025 MWxAram — All rights reserved</p>
+  </div>
+</div>
+<style>
+@keyframes authorPulse{0%,100%{opacity:.3;transform:scale(1);}50%{opacity:.8;transform:scale(1.06);}}
+</style>
+
+</body>
+</html>

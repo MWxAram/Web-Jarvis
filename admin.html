@@ -1,0 +1,2096 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JARVIS — Админ панель</title>
+<link rel="icon" type="image/x-icon" href="jarvis.ico">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght=500;600;700&family=Inter:wght=400;500;600;700&family=JetBrains+Mono:wght=400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg0:#03060c; --bg1:#0a0f18; --bg2:#101a28; --bg3:#141e2e;
+  --line:rgba(0,180,255,.16); --line-soft:rgba(0,180,255,.08);
+  --ink:#dce8f5; --ink-dim:#5f7a90; --dim:#6c84a0; --dim2:#3f5267;
+  --cyan:#00b4ff; --cyan2:#5eebff; --mint:#00ffa8; --gold:#ffd24a;
+  --orange:#ff6a2e; --red:#ff3c5a; --red-bg:rgba(255,60,90,.08);
+  --f-display:'Rajdhani',sans-serif; --f-body:'Inter',sans-serif; --f-mono:'JetBrains Mono',monospace;
+  --sidebar:240px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg0);color:var(--ink);font-family:var(--f-body);line-height:1.6;overflow-x:hidden;min-height:100vh;}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 900px 600px at 85% -10%,rgba(0,180,255,.08),transparent 60%),radial-gradient(ellipse 600px 500px at 0% 90%,rgba(0,255,168,.04),transparent 60%);pointer-events:none;z-index:0;}
+body::after{content:'';position:fixed;inset:0;background-image:linear-gradient(var(--line-soft) 1px,transparent 1px),linear-gradient(90deg,var(--line-soft) 1px,transparent 1px);background-size:64px 64px;pointer-events:none;z-index:0;opacity:.3;}
+a{color:inherit;text-decoration:none;}
+h1,h2,h3,h4{font-family:var(--f-display);font-weight:700;}
+
+/* ── LAYOUT ── */
+.layout{display:flex;min-height:100vh;position:relative;z-index:1;}
+
+/* ── SIDEBAR ── */
+.sidebar{
+  width:var(--sidebar);flex:none;
+  background:rgba(10,15,24,.95);
+  border-right:1px solid var(--line);
+  display:flex;flex-direction:column;
+  position:sticky;top:0;height:100vh;overflow-y:auto;
+}
+.sidebar-logo{
+  padding:24px 20px 20px;
+  border-bottom:1px solid var(--line);
+  display:flex;align-items:center;gap:10px;
+}
+.sidebar-logo .j{
+  width:36px;height:36px;border-radius:50%;
+  background:linear-gradient(135deg,var(--cyan),#0070c0);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--f-display);font-weight:700;font-size:1.1rem;color:#04101c;flex:none;
+  box-shadow:0 0 16px rgba(0,180,255,.4);
+}
+.sidebar-logo span{font-family:var(--f-display);font-weight:700;font-size:1.1rem;letter-spacing:.05em;}
+.sidebar-logo small{display:block;font-family:var(--f-mono);font-size:.55rem;letter-spacing:.2em;color:var(--red);margin-top:1px;}
+
+.nav-section{padding:16px 12px 6px;font-family:var(--f-mono);font-size:.6rem;letter-spacing:.2em;color:var(--dim2);text-transform:uppercase;}
+.nav-item{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 14px;margin:2px 8px;border-radius:8px;
+  font-size:.88rem;font-weight:500;color:var(--dim);
+  cursor:pointer;transition:all .15s;border:none;background:transparent;width:calc(100% - 16px);text-align:left;
+}
+.nav-item svg{width:16px;height:16px;flex:none;opacity:.7;}
+.nav-item:hover{background:rgba(0,180,255,.06);color:var(--ink);}
+.nav-item.active{background:rgba(0,180,255,.12);color:var(--cyan);border-left:2px solid var(--cyan);margin-left:6px;padding-left:12px;}
+.nav-item.active svg{opacity:1;}
+.nav-badge{margin-left:auto;background:var(--red);color:#fff;font-size:.65rem;font-family:var(--f-mono);padding:1px 6px;border-radius:10px;font-weight:600;}
+
+.sidebar-bottom{margin-top:auto;padding:16px;border-top:1px solid var(--line);}
+.admin-chip{display:flex;align-items:center;gap:8px;padding:8px 10px;background:rgba(255,60,90,.08);border:1px solid rgba(255,60,90,.2);border-radius:8px;}
+.admin-chip .dot{width:8px;height:8px;border-radius:50%;background:var(--red);box-shadow:0 0 8px var(--red);flex:none;}
+.admin-chip span{font-family:var(--f-mono);font-size:.7rem;color:var(--red);letter-spacing:.05em;}
+.btn-logout{width:100%;margin-top:10px;padding:9px;border-radius:7px;border:1px solid var(--line);background:transparent;color:var(--dim);font-size:.82rem;cursor:pointer;transition:all .15s;font-family:var(--f-body);}
+.btn-logout:hover{border-color:var(--red);color:var(--red);}
+
+/* ── MAIN CONTENT ── */
+.main{flex:1;overflow-x:hidden;}
+.topbar{
+  height:60px;display:flex;align-items:center;justify-content:space-between;
+  padding:0 28px;border-bottom:1px solid var(--line);
+  background:rgba(4,8,16,.5);backdrop-filter:blur(12px);
+  position:sticky;top:0;z-index:50;
+}
+.page-title{font-family:var(--f-display);font-size:1.25rem;font-weight:700;letter-spacing:.04em;}
+.topbar-right{display:flex;align-items:center;gap:12px;}
+.refresh-btn{
+  display:flex;align-items:center;gap:6px;padding:7px 14px;
+  border-radius:7px;border:1px solid var(--line);background:transparent;
+  color:var(--dim);font-size:.82rem;cursor:pointer;transition:all .15s;font-family:var(--f-body);
+}
+.refresh-btn:hover{border-color:var(--cyan);color:var(--cyan);}
+.admin-name{font-family:var(--f-mono);font-size:.75rem;color:var(--dim);}
+
+.content{padding:24px 28px;display:flex;flex-direction:column;gap:24px;}
+
+/* ── SECTION ── */
+.section{display:none;}
+.section.active{display:flex;flex-direction:column;gap:20px;}
+
+/* ── STAT CARDS ── */
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;}
+.stat-card{
+  background:var(--bg1);border:1px solid var(--line);border-radius:12px;
+  padding:18px 20px;display:flex;flex-direction:column;gap:6px;
+}
+.stat-label{font-family:var(--f-mono);font-size:.65rem;letter-spacing:.15em;text-transform:uppercase;color:var(--dim);}
+.stat-value{font-family:var(--f-display);font-size:2rem;font-weight:700;line-height:1;}
+.stat-sub{font-size:.75rem;color:var(--dim);margin-top:2px;}
+.stat-cyan{color:var(--cyan);}
+.stat-gold{color:var(--gold);}
+.stat-mint{color:var(--mint);}
+.stat-red{color:var(--red);}
+.stat-card.highlight{border-color:rgba(0,180,255,.35);background:rgba(0,180,255,.04);}
+
+/* ── FUNCTION ICONS (блоки «Все функции») ── */
+.func-card-head{display:flex;align-items:center;gap:10px;margin-bottom:2px;}
+.func-icon{
+  width:32px;height:32px;flex:none;border-radius:9px;
+  background:rgba(0,180,255,.08);border:1px solid var(--line);
+  display:flex;align-items:center;justify-content:center;
+}
+.func-icon svg{width:16px;height:16px;stroke:var(--cyan);}
+.func-card-label{font-family:var(--f-mono);font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);line-height:1.35;}
+.stat-card.func-top .func-icon{background:rgba(255,210,74,.12);border-color:rgba(255,210,74,.35);}
+.stat-card.func-top .func-icon svg{stroke:var(--gold);}
+.func-rank-badge{
+  font-family:var(--f-mono);font-size:.6rem;font-weight:700;color:var(--gold);
+  background:rgba(255,210,74,.12);border:1px solid rgba(255,210,74,.3);
+  border-radius:6px;padding:1px 6px;margin-left:auto;flex:none;
+}
+
+/* ── CHART ── */
+.chart-card{background:var(--bg1);border:1px solid var(--line);border-radius:12px;padding:20px 24px;}
+.chart-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
+.chart-title{font-family:var(--f-display);font-size:1rem;font-weight:600;letter-spacing:.03em;}
+.chart-subtitle{font-size:.78rem;color:var(--dim);}
+.bar-chart {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+  height: 140px;
+}
+
+.bar-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  height: 100%;
+}
+
+.bar-body-wrap {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 6px 0;
+}
+
+.bar {
+  width: 100%;
+  background: linear-gradient(180deg, var(--cyan), rgba(0,180,255,.3));
+  border-radius: 4px 4px 0 0;
+  transition: height .4s ease;
+  min-height: 4px;
+}
+
+.bar-label {
+  font-family: var(--f-mono);
+  font-size: .6rem;
+  color: var(--dim);
+  white-space: nowrap;
+}
+
+.bar-val {
+  font-family: var(--f-mono);
+  font-size: .65rem;
+  color: var(--cyan2);
+  margin-bottom: 2px;
+}
+
+/* ── PANELS (2 col) ── */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+.panel{background:var(--bg1);border:1px solid var(--line);border-radius:12px;padding:20px;}
+.panel-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.panel-title{font-family:var(--f-display);font-size:.95rem;font-weight:600;}
+.donut-wrap{display:flex;align-items:center;gap:20px;padding:4px 0;}
+.donut{width:80px;height:80px;flex:none;}
+.donut-legend{display:flex;flex-direction:column;gap:8px;}
+.legend-row{display:flex;align-items:center;gap:8px;font-size:.8rem;}
+.legend-dot{width:8px;height:8px;border-radius:50%;flex:none;}
+
+/* ── RANKED LIST (топ функций в аналитике) ── */
+.rank-list{display:flex;flex-direction:column;gap:12px;}
+.rank-row{display:flex;align-items:center;gap:12px;}
+.rank-pos{
+  font-family:var(--f-mono);font-size:.7rem;color:var(--dim2);
+  width:18px;flex:none;text-align:right;
+}
+.rank-body{flex:1;min-width:0;}
+.rank-head{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:4px;}
+.rank-label{font-size:.85rem;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.rank-count{font-family:var(--f-mono);font-size:.78rem;color:var(--cyan2);flex:none;}
+.rank-track{height:6px;border-radius:4px;background:var(--bg2);overflow:hidden;}
+.rank-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--cyan),var(--mint));transition:width .4s ease;}
+
+/* ── TABLES ── */
+.table-card{background:var(--bg1);border:1px solid var(--line);border-radius:12px;overflow:hidden;}
+.table-toolbar{
+  display:flex;align-items:center;gap:12px;padding:16px 20px;
+  border-bottom:1px solid var(--line);flex-wrap:wrap;
+}
+.table-title{font-family:var(--f-display);font-size:1rem;font-weight:600;letter-spacing:.03em;margin-right:auto;}
+.search-box{
+  display:flex;align-items:center;gap:8px;
+  background:var(--bg2);border:1px solid var(--line);border-radius:8px;
+  padding:7px 12px;min-width:200px;
+}
+.search-box svg{width:14px;height:14px;color:var(--dim);flex:none;}
+.search-box input{background:transparent;border:none;outline:none;color:var(--ink);font-size:.85rem;font-family:var(--f-body);width:100%;}
+.search-box input::placeholder{color:var(--dim2);}
+.filter-select{
+  background:var(--bg2);border:1px solid var(--line);border-radius:8px;
+  color:var(--ink);padding:7px 10px;font-size:.82rem;font-family:var(--f-body);outline:none;cursor:pointer;
+}
+table{width:100%;border-collapse:collapse;}
+th{
+  background:var(--bg2);font-family:var(--f-mono);font-size:.65rem;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--dim);
+  padding:10px 16px;text-align:left;border-bottom:1px solid var(--line);
+}
+td{padding:12px 16px;border-bottom:1px solid rgba(0,180,255,.06);font-size:.85rem;vertical-align:middle;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:rgba(0,180,255,.03);}
+.mono{font-family:var(--f-mono);font-size:.78rem;}
+.badge{
+  display:inline-flex;align-items:center;gap:4px;
+  padding:3px 9px;border-radius:20px;font-size:.7rem;font-weight:600;
+  font-family:var(--f-mono);letter-spacing:.05em;
+}
+.badge-vip{background:rgba(255,210,74,.12);color:var(--gold);border:1px solid rgba(255,210,74,.25);}
+.badge-free{background:rgba(108,132,160,.1);color:var(--dim);border:1px solid rgba(108,132,160,.2);}
+.badge-active{background:rgba(0,255,168,.1);color:var(--mint);border:1px solid rgba(0,255,168,.2);}
+.badge-blocked{background:var(--red-bg);color:var(--red);border:1px solid rgba(255,60,90,.25);}
+
+/* ── ACTION BUTTONS ── */
+.actions{display:flex;gap:6px;}
+.act-btn{
+  padding:5px 10px;border-radius:6px;font-size:.75rem;font-weight:600;
+  cursor:pointer;transition:all .15s;border:1px solid;font-family:var(--f-body);
+  display:inline-flex;align-items:center;gap:4px;
+}
+.act-block{background:rgba(255,60,90,.08);border-color:rgba(255,60,90,.25);color:var(--red);}
+.act-block:hover{background:rgba(255,60,90,.18);}
+.act-unblock{background:rgba(0,255,168,.08);border-color:rgba(0,255,168,.25);color:var(--mint);}
+.act-unblock:hover{background:rgba(0,255,168,.18);}
+.act-vip{background:rgba(255,210,74,.08);border-color:rgba(255,210,74,.25);color:var(--gold);}
+.act-vip:hover{background:rgba(255,210,74,.18);}
+.act-del{background:rgba(255,60,90,.06);border-color:rgba(255,60,90,.15);color:rgba(255,60,90,.7);}
+.act-del:hover{background:rgba(255,60,90,.15);color:var(--red);}
+.act-copy{background:rgba(0,180,255,.06);border-color:rgba(0,180,255,.2);color:var(--cyan);}
+.act-copy:hover{background:rgba(0,180,255,.14);}
+.act-read{background:rgba(0,255,168,.08);border-color:rgba(0,255,168,.2);color:var(--mint);}
+.act-read:hover{background:rgba(0,255,168,.18);}
+
+/* ── TOAST ── */
+#toast{
+  position:fixed;bottom:28px;right:28px;z-index:9999;
+  display:flex;flex-direction:column;gap:8px;pointer-events:none;
+}
+.toast-item{
+  background:var(--bg2);border:1px solid var(--line);border-radius:10px;
+  padding:12px 16px;font-size:.84rem;min-width:240px;max-width:340px;
+  box-shadow:0 8px 32px rgba(0,0,0,.5);animation:slideIn .25s ease;
+  pointer-events:auto;
+}
+.toast-ok{border-color:rgba(0,255,168,.3);color:var(--mint);}
+.toast-err{border-color:rgba(255,60,90,.3);color:var(--red);}
+@keyframes slideIn{from{transform:translateX(20px);opacity:0;}to{transform:none;opacity:1;}}
+
+/* ── EMPTY ── */
+.empty{text-align:center;padding:40px 20px;color:var(--dim);font-size:.88rem;}
+.empty svg{width:32px;height:32px;margin:0 auto 10px;display:block;opacity:.3;}
+
+/* ── LOADER ── */
+.loader{text-align:center;padding:40px;color:var(--dim);font-family:var(--f-mono);font-size:.8rem;letter-spacing:.1em;}
+
+/* ── MODAL ── */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(3,6,12,.85);z-index:200;
+  display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px);
+}
+.modal-overlay.open{display:flex;}
+.modal{
+  background:var(--bg1);border:1px solid var(--line);border-radius:14px;
+  padding:28px;width:100%;max-width:420px;
+}
+.modal h3{font-family:var(--f-display);font-size:1.15rem;margin-bottom:16px;}
+.modal p{font-size:.88rem;color:var(--dim);margin-bottom:20px;line-height:1.7;}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;}
+.btn-cancel{padding:9px 18px;border-radius:8px;border:1px solid var(--line);background:transparent;color:var(--dim);font-size:.85rem;cursor:pointer;}
+.btn-cancel:hover{border-color:var(--ink);color:var(--ink);}
+.btn-confirm-del{padding:9px 18px;border-radius:8px;border:none;background:var(--red);color:#fff;font-size:.85rem;cursor:pointer;font-weight:600;}
+.btn-confirm-del:hover{filter:brightness(1.1);}
+.btn-confirm-vip{padding:9px 18px;border-radius:8px;border:none;background:linear-gradient(135deg,var(--gold),#ff9a4a);color:#04101c;font-size:.85rem;cursor:pointer;font-weight:600;}
+.modal .form-input{width:100%;margin-bottom:16px;}
+
+/* ── УПРАВЛЕНИЕ ОБНОВЛЕНИЯМИ ── */
+.updates-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.3fr;
+  gap: 24px;
+  align-items: start;
+  margin-top: 20px;
+}
+@media (max-width: 992px) {
+  .updates-grid { grid-template-columns: 1fr; }
+}
+.form-card, .list-card {
+  background: var(--bg1);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 24px;
+}
+.form-group {
+  margin-bottom: 16px;
+}
+.form-group label {
+  display: block;
+  font-family: var(--f-mono);
+  font-size: 0.75rem;
+  color: var(--dim);
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.form-control {
+  width: 100%;
+  background: var(--bg2);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  color: var(--ink);
+  padding: 10px 14px;
+  font-family: var(--f-body);
+  font-size: 0.9rem;
+  transition: all 0.2s;
+}
+.form-control:focus {
+  outline: none;
+  border-color: var(--cyan);
+  box-shadow: 0 0 10px rgba(0,180,255,0.2);
+}
+textarea.form-control {
+  resize: vertical;
+  min-height: 120px;
+  font-family: var(--f-mono);
+  font-size: 0.85rem;
+}
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: var(--ink);
+  cursor: pointer;
+  user-select: none;
+}
+.btn-cyan {
+  background: var(--cyan);
+  color: #03060c;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 20px;
+  font-family: var(--f-display);
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.15s;
+  letter-spacing: 0.05em;
+}
+.btn-cyan:hover {
+  background: var(--cyan2);
+  box-shadow: 0 0 14px rgba(0,180,255,0.4);
+}
+.btn-secondary {
+  background: transparent;
+  color: var(--dim);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 10px 20px;
+  font-family: var(--f-body);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.15s;
+  margin-left: 8px;
+}
+.btn-secondary:hover {
+  border-color: var(--dim);
+  color: var(--ink);
+}
+.update-item-box {
+  padding: 16px; 
+  margin-bottom: 12px; 
+  background: var(--bg2); 
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  transition: border-color 0.2s;
+}
+.update-item-box.featured {
+  border-color: rgba(0, 180, 255, 0.4);
+  background: linear-gradient(145deg, var(--bg2), rgba(0, 180, 255, 0.02));
+}
+
+/* Переключатель табов в админ-панели */
+.tabs-container {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 25px;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 12px;
+}
+
+.tab-btn {
+  background: var(--bg2);
+  color: var(--ink-dim);
+  border: 1px solid var(--line);
+  padding: 10px 24px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+}
+
+.tab-btn:hover {
+  color: var(--ink);
+  background: var(--bg3);
+  border-color: var(--cyan);
+}
+
+.tab-btn.active {
+  background: var(--cyan);
+  color: #03060c;
+  border-color: var(--cyan);
+  font-weight: 700;
+  box-shadow: 0 0 12px rgba(0, 180, 255, 0.3);
+}
+
+/* Контент табов */
+.update-tab-content {
+  display: none;
+}
+
+.update-tab-content.active {
+  display: block;
+}
+
+/* Интерактивные карточки для Главной страницы */
+.cmd-card-clickable {
+  cursor: pointer;
+  background: var(--bg2);
+  padding: 24px;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.cmd-card-clickable:hover {
+  transform: translateY(-4px);
+  border-color: var(--cyan) !important;
+  box-shadow: 0 6px 20px rgba(0, 180, 255, 0.15);
+}
+
+/* Стили для тегов (Новое, Улучшено, Исправлено) */
+.badge {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+.badge-new { background: rgba(0, 255, 168, 0.12); color: #00ffa8; border: 1px solid rgba(0, 255, 168, 0.25); }
+.badge-improved { background: rgba(255, 210, 74, 0.12); color: #ffd24a; border: 1px solid rgba(255, 210, 74, 0.25); }
+.badge-fixed { background: rgba(0, 180, 255, 0.12); color: #00b4ff; border: 1px solid rgba(0, 180, 255, 0.25); }
+
+/* Анимация пульсации для Live-статуса */
+@keyframes pulse-live {
+  0% { transform: scale(0.95); opacity: 0.5; box-shadow: 0 0 0 0 rgba(0, 255, 168, 0.6); }
+  70% { transform: scale(1); opacity: 1; box-shadow: 0 0 0 6px rgba(0, 255, 168, 0); }
+  100% { transform: scale(0.95); opacity: 0.5; box-shadow: 0 0 0 0 rgba(0, 255, 168, 0); }
+}
+
+.pulse-dot {
+  width: 8px;
+  height: 8px;
+  background: var(--mint);
+  border-radius: 50%;
+  display: inline-block;
+  animation: pulse-live 2s infinite;
+}
+
+/* Элегантный неоновый скроллбар для длинных списков изменений */
+.modal-changelog-scroll::-webkit-scrollbar {
+  width: 4px;
+}
+.modal-changelog-scroll::-webkit-scrollbar-track {
+  background: var(--bg3);
+  border-radius: 2px;
+}
+.modal-changelog-scroll::-webkit-scrollbar-thumb {
+  background: var(--line);
+  border-radius: 2px;
+}
+.modal-changelog-scroll::-webkit-scrollbar-thumb:hover {
+  background: var(--cyan);
+}
+
+/* Скроллбар таблицы пользователей */
+.table-scroll::-webkit-scrollbar {
+  height: 4px;
+}
+.table-scroll::-webkit-scrollbar-track {
+  background: var(--bg2);
+  border-radius: 0 0 12px 12px;
+}
+.table-scroll::-webkit-scrollbar-thumb {
+  background: var(--line);
+  border-radius: 2px;
+}
+.table-scroll::-webkit-scrollbar-thumb:hover {
+  background: var(--cyan);
+  box-shadow: 0 0 6px var(--cyan);
+}
+
+</style>
+</head>
+<body>
+
+<div class="layout">
+
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="j">J</div>
+      <div>
+        <div>JARVIS</div>
+        <small>ADMIN PANEL</small>
+      </div>
+    </div>
+
+    <div class="nav-section">Обзор</div>
+    <button class="nav-item active" data-section="dashboard" onclick="showSection('dashboard',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+      Дашборд
+    </button>
+    <button class="nav-item" data-section="analytics" onclick="showSection('analytics',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+      Статистика
+    </button>
+
+    <div class="nav-section">Управление</div>
+    <button class="nav-item" data-section="users" onclick="showSection('users',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+      Пользователи
+    </button>
+    <button class="nav-item" data-section="messages" onclick="showSection('messages',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+      Обращения
+      <span class="nav-badge" id="unread-badge" style="display:none">0</span>
+    </button>
+    <button class="nav-item" id="nav-updates" onclick="showSection('updates', this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;">
+        <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+      </svg>
+      <span>Обновления</span>
+    </button>
+
+    <div class="sidebar-bottom">
+      <div class="admin-chip">
+        <div class="dot"></div>
+        <span id="admin-username">ADMIN</span>
+      </div>
+      <button class="btn-logout" onclick="logout()">Выйти из панели</button>
+    </div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="page-title" id="page-title">Дашборд</div>
+      <div class="topbar-right">
+        <button class="refresh-btn" onclick="refreshCurrent()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
+          Обновить
+        </button>
+        <span class="admin-name" id="admin-email">—</span>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <div class="section active" id="section-dashboard">
+        <div class="stat-grid" id="stat-grid">
+          <div class="loader">Загрузка...</div>
+        </div>
+
+        <div class="two-col">
+          <div class="chart-card">
+            <div class="chart-head">
+              <div>
+                <div class="chart-title">Регистрации</div>
+                <div class="chart-subtitle">За последние 7 дней</div>
+              </div>
+            </div>
+            <div class="bar-chart" id="bar-chart">
+              <div class="loader">Загрузка...</div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-head"><div class="panel-title">Подписки и активность</div></div>
+            <div style="display:flex; gap:18px; align-items:center; justify-content:space-around; flex-wrap:wrap;">
+              <div class="donut-wrap">
+                <svg class="donut" viewBox="0 0 80 80" id="donut-svg">
+                  <circle cx="40" cy="40" r="28" fill="none" stroke="var(--bg2)" stroke-width="16"/>
+                  <circle cx="40" cy="40" r="28" fill="none" stroke="var(--gold)" stroke-width="16"
+                    stroke-dasharray="0 176" stroke-dashoffset="44"
+                    id="donut-vip" style="transition:stroke-dasharray .5s ease;transform-origin:center;transform:rotate(-90deg);"/>
+                  <circle cx="40" cy="40" r="28" fill="none" stroke="var(--dim2)" stroke-width="16"
+                    stroke-dasharray="176 0" stroke-dashoffset="44"
+                    id="donut-free" style="transition:stroke-dasharray .5s ease;transform-origin:center;transform:rotate(-90deg);"/>
+                </svg>
+                <div class="donut-legend">
+                  <div class="legend-row"><div class="legend-dot" style="background:var(--gold)"></div><span id="legend-vip">VIP: —</span></div>
+                  <div class="legend-row"><div class="legend-dot" style="background:var(--dim2)"></div><span id="legend-free">Free: —</span></div>
+                </div>
+              </div>
+
+              <div class="donut-wrap">
+                <svg class="donut" viewBox="0 0 80 80" id="donut-online-svg">
+                  <circle cx="40" cy="40" r="28" fill="none" stroke="var(--bg2)" stroke-width="16"/>
+                  <circle cx="40" cy="40" r="28" fill="none" stroke="var(--mint)" stroke-width="16"
+                    stroke-dasharray="0 176" stroke-dashoffset="44"
+                    id="donut-online" style="transition:stroke-dasharray .5s ease;transform-origin:center;transform:rotate(-90deg);"/>
+                  <circle cx="40" cy="40" r="28" fill="none" stroke="var(--dim2)" stroke-width="16"
+                    stroke-dasharray="176 0" stroke-dashoffset="44"
+                    id="donut-offline" style="transition:stroke-dasharray .5s ease;transform-origin:center;transform:rotate(-90deg);"/>
+                </svg>
+                <div class="donut-legend">
+                  <div class="legend-row"><div class="legend-dot" style="background:var(--mint)"></div><span id="legend-online">Онлайн: —</span></div>
+                  <div class="legend-row"><div class="legend-dot" style="background:var(--dim2)"></div><span id="legend-offline">Офлайн: —</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section" id="section-analytics">
+        <div class="section-header" style="margin-bottom: 4px;">
+          <h2 style="font-family: var(--f-display); font-size: 1.6rem; color: var(--ink); letter-spacing: 0.03em;">Статистика использования JARVIS</h2>
+          <p style="color: var(--dim); font-size: 0.88rem;">Какие функции приложения используют чаще всего. Данные анонимны — только тип действия и время, без привязки к пользователю.</p>
+        </div>
+
+        <div id="analytics-top-bar" style="display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap;">
+          <div class="tabs-container" id="analytics-period-tabs">
+            <button class="tab-btn" data-days="7" onclick="switchAnalyticsPeriod(7,this)">Неделя</button>
+            <button class="tab-btn active" data-days="30" onclick="switchAnalyticsPeriod(30,this)">Месяц</button>
+            <button class="tab-btn" data-days="90" onclick="switchAnalyticsPeriod(90,this)">90 дней</button>
+            <button class="tab-btn" data-days="3650" onclick="switchAnalyticsPeriod(3650,this)">Всё время</button>
+          </div>
+          <button type="button" class="btn-cyan" id="btn-all-functions" style="padding:8px 16px; font-size:.82rem; height:auto;" onclick="showAllFunctionsView()">Все функции</button>
+        </div>
+
+        <div id="analytics-default-view" style="display:flex; flex-direction:column; gap:20px;">
+          <div class="stat-grid" id="analytics-stat-grid">
+            <div class="loader">Загрузка...</div>
+          </div>
+
+          <div class="two-col">
+            <div class="chart-card">
+              <div class="chart-head">
+                <div>
+                  <div class="chart-title">Активность</div>
+                  <div class="chart-subtitle">События по дням, последние 14 дней</div>
+                </div>
+              </div>
+              <div class="bar-chart" id="analytics-bar-chart">
+                <div class="loader">Загрузка...</div>
+              </div>
+            </div>
+
+            <div class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Топ функций</div>
+                <span id="analytics-period-label" style="font-family:var(--f-mono); font-size:.7rem; color:var(--dim);"></span>
+              </div>
+              <div class="rank-list" id="analytics-rank-list">
+                <div class="loader">Загрузка...</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="all-functions-view" style="display:none; flex-direction:column; gap:16px;">
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap;">
+            <div class="tabs-container" id="all-functions-period-tabs">
+              <button class="tab-btn active" data-period="today" onclick="switchAllFunctionsPeriod('today',this)">Сегодня</button>
+              <button class="tab-btn" data-period="yesterday" onclick="switchAllFunctionsPeriod('yesterday',this)">Вчера</button>
+              <button class="tab-btn" data-period="week" onclick="switchAllFunctionsPeriod('week',this)">Неделя</button>
+              <button class="tab-btn" data-period="month" onclick="switchAllFunctionsPeriod('month',this)">Месяц</button>
+              <button class="tab-btn" data-period="all_time" onclick="switchAllFunctionsPeriod('all_time',this)">За всё время</button>
+            </div>
+            <button type="button" class="btn-secondary" style="padding:6px 14px; font-size:.8rem; height:auto;" onclick="hideAllFunctionsView()">← Назад к статистике</button>
+          </div>
+
+          <div class="stat-grid" id="all-functions-content">
+            <div class="loader">Загрузка...</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section" id="section-users">
+        <div class="table-card">
+          <div class="table-toolbar">
+            <span class="table-title">Пользователи</span>
+            <div class="search-box">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="text" id="user-search" placeholder="Поиск по имени / email…" oninput="debounceUsers()">
+            </div>
+            <select class="filter-select" id="user-plan" onchange="loadUsers()">
+              <option value="">Все планы</option>
+              <option value="free">Free</option>
+              <option value="vip">VIP</option>
+            </select>
+          </div>
+          <div id="users-table-wrap">
+            <div class="loader">Загрузка...</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section" id="section-messages">
+        <div class="table-card">
+          <div class="table-toolbar">
+            <span class="table-title">Обращения</span>
+            <label style="display:flex;align-items:center;gap:6px;font-size:.83rem;color:var(--dim);cursor:pointer;">
+              <input type="checkbox" id="unread-only" onchange="loadMessages()" style="accent-color:var(--cyan);">
+              Только непрочитанные
+            </label>
+          </div>
+          <div id="messages-table-wrap">
+            <div class="loader">Загрузка...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ФИКС: Удалено style="display: none;" чтобы избежать конфликта приоритетов стилей -->
+      <!-- Вкладка «Управление обновлениями» в фирменном стиле JARVIS -->
+      <div id="section-updates" class="section">
+        <div class="section-header" style="margin-bottom: 20px;">
+          <h2 style="font-family: var(--f-display); font-size: 1.6rem; color: var(--ink); letter-spacing: 0.03em;">Управление обновлениями</h2>
+          <p style="color: var(--dim); font-size: 0.88rem;">Редактирование общего журнала изменений и фиксированных карточек на главной</p>
+        </div>
+
+        <div class="tabs-container">
+          <button class="tab-btn active" onclick="switchUpdateTab('tab-updates-list')">Журнал обновлений (updates.html)</button>
+          <button class="tab-btn" onclick="switchUpdateTab('tab-homepage-cards')">Главная страница (index.html)</button>
+        </div>
+
+        <div id="tab-updates-list" class="update-tab-content active">
+          <!-- Используем встроенную сетку .updates-grid для разделения формы и истории -->
+          <div class="updates-grid">
+            
+            <!-- Левая колонка: Форма добавления/редактирования -->
+            <div class="form-card">
+              <form id="update-form" onsubmit="saveUpdate(event)">
+                <h3 id="update-form-title" style="font-family: var(--f-display); margin-bottom: 18px; color: var(--cyan); letter-spacing: 0.02em;">Добавить обновление в журнал</h3>
+                <input type="hidden" id="update-id">
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                  <div class="form-group">
+                    <label for="update-version">Версия:</label>
+                    <input type="text" id="update-version" class="form-control" placeholder="Например, v0.9.3" required>
+                  </div>
+                  <div class="form-group">
+                    <label for="update-date">Дата выпуска:</label>
+                    <input type="date" id="update-date" class="form-control" required>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label for="update-title">Заголовок патча:</label>
+                  <input type="text" id="update-title" class="form-control" placeholder="Например, Интеграция ИИ и кастомизация карт" required>
+                </div>
+
+                <div class="form-group" style="margin-top: 20px;">
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                    <label style="margin-bottom: 0; color: var(--ink);">Содержимое патча:</label>
+                    <button type="button" class="btn-cyan" style="padding: 4px 12px; font-size: 0.8rem; height: auto;" onclick="addChangelogRow()">+ Добавить пункт</button>
+                  </div>
+                  
+                  <div id="changelog-rows-container" style="display: flex; flex-direction: column; gap: 10px; max-height: 280px; overflow-y: auto; padding-right: 5px;">
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-top: 20px; display:flex; align-items:center; gap:10px;">
+                  <input type="checkbox" id="update-featured" style="width:16px; height:16px; cursor:pointer;">
+                  <label for="update-featured" style="margin-bottom:0; cursor:pointer;">Показывать карточкой на главной (index.html) — максимум 3</label>
+                </div>
+
+                <div class="form-group" id="update-featured-color-group" style="display:none;">
+                  <label for="update-featured-color">Цвет плашки версии на главной:</label>
+                  <select id="update-featured-color" class="form-control">
+                    <option value="#00ffa8">Мятный зелёный (#00ffa8)</option>
+                    <option value="#ffd24a">Золотой жёлтый (#ffd24a)</option>
+                    <option value="#00b4ff">Циановый синий (#00b4ff)</option>
+                    <option value="#ff5eeb">Розовый неоновый (#ff5eeb)</option>
+                  </select>
+                </div>
+
+                <div class="form-actions" style="margin-top: 25px; display: flex; gap: 12px;">
+                  <button type="submit" class="btn-cyan" style="flex: 2;">Сохранить запись</button>
+                  <button type="button" class="btn-secondary" style="flex: 1;" onclick="showUpdatePreview()">Предосмотр</button>
+                  <button type="button" id="btn-cancel-update-edit" class="btn-secondary" style="display:none; flex: 1; color: var(--orange);" onclick="resetUpdateForm()">Отмена</button>
+                </div>
+              </form>
+            </div>
+
+
+            <div id="preview-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(3,6,12,0.85); z-index: 9999; justify-content: center; align-items: center; backdrop-filter: blur(5px);">
+              <div style="background: var(--bg1); border: 1px solid var(--cyan); width: 95%; max-width: 550px; border-radius: 12px; padding: 25px; box-shadow: 0 0 35px rgba(0,180,255,0.25); position: relative; max-height: 90vh; display: flex; flex-direction: column; overflow: hidden;">
+                <button type="button" style="position: absolute; top: 15px; right: 15px; background: none; border: none; color: var(--dim); font-size: 1.4rem; cursor: pointer;" onclick="closePreviewModal()">✕</button>
+                
+                <h3 style="font-family: var(--f-display); color: var(--cyan); margin-bottom: 20px; font-size: 1.3rem; letter-spacing: 0.02em; flex-shrink: 0;">👁️ Предварительный просмотр патча</h3>
+                
+                <div id="preview-modal-content" class="modal-changelog-scroll" style="background: var(--bg2); border-radius: 8px; padding: 20px; border: 1px solid var(--line-soft); flex: 1; overflow-y: auto; min-height: 0;">
+                  </div>
+                
+                <div style="margin-top: 20px; display: flex; justify-content: flex-end; flex-shrink: 0;">
+                  <button type="button" class="btn-cyan" style="padding: 6px 20px;" onclick="closePreviewModal()">Готово</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Правая колонка: Таблица истории изменений -->
+            <div class="table-card">
+              <div class="table-toolbar">
+                <span class="table-title" style="color: var(--ink);">История записей журнала</span>
+              </div>
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>Версия</th>
+                    <th>Дата</th>
+                    <th>Заголовок</th>
+                    <th>Категория</th>
+                    <th>Действия</th>
+                  </tr>
+                </thead>
+                <tbody id="updates-table-body">
+                  <!-- Сюда JavaScript рендерит строки изменений -->
+                </tbody>
+              </table>
+            </div>
+
+          </div>
+        </div>
+
+        <div id="tab-homepage-cards" class="update-tab-content">
+          <!-- ── Блок «Текущая версия» ── -->
+          <div style="background: var(--bg1); padding: 24px; border-radius: 12px; border: 1px solid var(--line); margin-bottom: 20px;">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; flex-wrap:wrap; gap:12px;">
+              <div>
+                <h3 style="font-family:var(--f-display); font-size:1.1rem; color:var(--cyan); letter-spacing:0.02em; margin-bottom:4px;">Текущая версия</h3>
+                <p style="color:var(--dim); font-size:0.82rem;">Отображается в шапке главной страницы как «текущая версия»</p>
+              </div>
+              <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+                <div style="background:var(--bg2); border:1px solid var(--line); border-radius:8px; padding:10px 16px; display:flex; align-items:center; gap:10px;">
+                  <span style="font-family:var(--f-mono); font-size:0.75rem; color:var(--dim); text-transform:uppercase; letter-spacing:0.1em;">Сейчас:</span>
+                  <span id="current-version-display" style="font-family:var(--f-mono); font-size:1.1rem; font-weight:700; color:var(--ink);">—</span>
+                </div>
+                <button class="btn-cyan" onclick="syncCurrentVersionFromLatest()" id="btn-sync-version"
+                  style="display:flex; align-items:center; gap:8px; white-space:nowrap;"
+                  title="Взять самую последнюю версию из журнала обновлений">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/>
+                  </svg>
+                  Взять последнюю из журнала
+                </button>
+              </div>
+            </div>
+            <div style="background:var(--bg2); border:1px solid var(--line); border-radius:8px; padding:14px 16px;" id="current-version-latest-hint">
+              <div style="font-family:var(--f-mono); font-size:0.75rem; color:var(--dim); margin-bottom:6px; text-transform:uppercase; letter-spacing:0.08em;">Последняя запись в журнале:</div>
+              <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+                <span id="latest-update-version" style="font-family:var(--f-mono); color:var(--cyan); font-weight:700;">—</span>
+                <span id="latest-update-title" style="color:var(--ink); font-size:0.88rem;">—</span>
+                <span id="latest-update-date" style="color:var(--dim); font-size:0.8rem; margin-left:auto;">—</span>
+              </div>
+            </div>
+            <!-- Ручной ввод версии -->
+            <div style="margin-top:14px; display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+              <div style="display:flex; align-items:center; gap:0; flex:1; min-width:200px; max-width:320px;">
+                <input type="text" id="manual-version-input" class="form-control"
+                  placeholder="Например: v1.0.2"
+                  style="border-radius:6px 0 0 6px; border-right:none;"
+                  onkeydown="if(event.key==='Enter'){saveCurrentVersionManual();}">
+                <button class="btn-cyan" onclick="saveCurrentVersionManual()"
+                  style="border-radius:0 6px 6px 0; white-space:nowrap; padding:10px 16px;">
+                  Установить
+                </button>
+              </div>
+              <span style="color:var(--dim); font-size:0.8rem;">— или используйте кнопку выше, чтобы взять автоматически</span>
+            </div>
+          </div>
+          <div class="wrap" id="updates" style="background: var(--bg1); padding: 30px; border-radius: 12px; border: 1px solid var(--line); margin-bottom: 24px;">
+            <section>
+              <div class="section-head">
+                <div class="eyebrow" style="color: var(--cyan); font-family: var(--f-mono); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.15em;">Журнал обновлений</div>
+                <h2 style="color:var(--ink); margin-top:5px; font-family: var(--f-display); font-size: 1.5rem;">JARVIS становится умнее каждую неделю</h2>
+                <p style="color:var(--ink-dim); font-size:0.88rem; margin-top:4px;">Отметьте до 3 записей журнала, чтобы они появились карточками на главной странице (index.html)</p>
+              </div>
+
+              <div id="homepage-cards-picker" style="display:flex; flex-direction:column; gap:10px; margin-top:25px;">
+                <!-- Сюда JS рендерит список записей журнала с переключателем «На главной» -->
+              </div>
+            </section>
+          </div>
+        </div>
+      </div>
+
+    </div></div></div><div id="toast"></div>
+
+<div class="modal-overlay" id="modal-delete">
+  <div class="modal">
+    <h3>Удалить пользователя?</h3>
+    <p id="modal-delete-text">Это действие необратимо. Все данные пользователя будут удалены.</p>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('modal-delete')">Отмена</button>
+      <button class="btn-confirm-del" id="modal-delete-confirm">Удалить</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-vip">
+  <div class="modal">
+    <h3>Выдать VIP и код кастомизации</h3>
+    <p id="modal-vip-text">Введите количество дней VIP для пользователя.</p>
+    <div class="form-group" style="margin-bottom:16px;">
+      <div class="form-label">Дней VIP</div>
+      <input type="number" class="form-input" id="vip-days-input" value="30" min="1" style="width:140px;">
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('modal-vip')">Отмена</button>
+      <button class="btn-confirm-vip" id="modal-vip-confirm">Выдать VIP</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-revoke-vip">
+  <div class="modal">
+    <h3>Забрать VIP?</h3>
+    <p id="modal-revoke-vip-text">VIP-статус и код будут немедленно деактивированы.</p>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('modal-revoke-vip')">Отмена</button>
+      <button class="btn-confirm-del" id="modal-revoke-vip-confirm">Забрать VIP</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// Раньше здесь был жёстко зашитый 'http://localhost:8000/api' —
+// фронтенд ломался при любом деплое кроме локальной разработки.
+// Теперь адрес берётся из window.JARVIS_API_BASE (можно задать одним
+// <script>window.JARVIS_API_BASE='https://api.example.com/api'
+// перед этим файлом при деплое), а если он не задан — используется
+// тот же хост, с которого открыта страница, порт 8000 (как раньше).
+const API = window.JARVIS_API_BASE || `${location.protocol}//${location.hostname}:8000/api`;
+let _currentSection = 'dashboard';
+let _searchTimer = null;
+let _adminData = null;
+
+// ── Auth ──────────────────────────────────────────────────────────────────────
+
+const Token = {
+  getAccess()  { return localStorage.getItem('jrv_access'); },
+  getRefresh() { return localStorage.getItem('jrv_refresh'); },
+  set(a, r)    { localStorage.setItem('jrv_access', a); localStorage.setItem('jrv_refresh', r); },
+  clear()      { localStorage.removeItem('jrv_access'); localStorage.removeItem('jrv_refresh'); },
+};
+
+function getToken() { return Token.getAccess(); }
+
+async function apiFetch(endpoint, options = {}) {
+  const token = Token.getAccess();
+  options.headers = { 'Content-Type': 'application/json', ...options.headers };
+  if (token) { options.headers['Authorization'] = `Bearer ${token}`; }
+
+  try {
+    let res = await fetch(API + endpoint, options);
+
+    if (res.status === 401 && Token.getRefresh()) {
+      const rr = await fetch(API + '/auth/refresh', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refresh_token: Token.getRefresh() }),
+      });
+      if (rr.ok) {
+        const { access_token } = await rr.json();
+        Token.set(access_token, Token.getRefresh());
+        options.headers['Authorization'] = `Bearer ${access_token}`;
+        res = await fetch(API + endpoint, options);
+      } else {
+        redirectLogin();
+        return null;
+      }
+    }
+
+    if (res.status === 403) {
+      toast('Доступ запрещён', 'error');
+      setTimeout(() => window.location.href = 'index.html', 1500);
+      return null;
+    }
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      toast(errData.detail || `Ошибка сервера: ${res.status}`, 'error');
+      return null;
+    }
+    return await res.json();
+  } catch (err) {
+    toast('Не удалось подключиться к серверу', 'error');
+    return null;
+  }
+}
+
+function redirectLogin() {
+  Token.clear();
+  window.location.href = 'index.html';
+}
+
+async function checkAdmin() {
+  const data = await apiFetch('/auth/me');
+  if (!data) return;
+  if (!data.is_admin) {
+    toast('Доступ запрещён: требуются права администратора', 'error');
+    setTimeout(() => window.location.href = 'index.html', 1500);
+    return;
+  }
+  _adminData = data;
+  document.getElementById('admin-username').textContent = data.username.toUpperCase();
+  document.getElementById('admin-email').textContent = data.email;
+}
+
+// Раньше эта функция просто редиректила на profile.html, не отзывая
+// refresh-токен на сервере и не очищая localStorage — после «выхода» из
+// админки токены оставались рабочими (сессия фактически не завершалась).
+async function logout() {
+  window.location.href = 'index.html';
+}
+
+// ── Navigation ────────────────────────────────────────────────────────────────
+const sectionTitles = {
+  dashboard: 'Дашборд',
+  analytics: 'Статистика',
+  users: 'Пользователи',
+  messages: 'Обращения',
+  updates: 'Управление обновлениями'
+};
+
+function showSection(name, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+  document.getElementById('section-' + name).classList.add('active');
+  btn.classList.add('active');
+  _currentSection = name;
+  document.getElementById('page-title').textContent = sectionTitles[name] || name;
+  loadSection(name);
+}
+
+function loadSection(name) {
+  if (name === 'dashboard') loadDashboard();
+  else if (name === 'analytics') { hideAllFunctionsView(); loadAnalytics(); }
+  else if (name === 'users') loadUsers();
+  else if (name === 'messages') loadMessages();
+  else if (name === 'updates') loadUpdates();
+}
+
+function refreshCurrent() { loadSection(_currentSection); }
+
+// ── Dashboard ─────────────────────────────────────────────────────────────────
+async function loadDashboard() {
+  const s = await apiFetch('/admin/stats');
+  if (!s) return;
+
+  const badge = document.getElementById('unread-badge');
+  if (s.unread_messages > 0) {
+    badge.textContent = s.unread_messages;
+    badge.style.display = '';
+  } else {
+    badge.style.display = 'none';
+  }
+
+  document.getElementById('stat-grid').innerHTML = `
+    <div class="stat-card highlight">
+      <div class="stat-label">Всего пользователей</div>
+      <div class="stat-value stat-cyan">${s.total_users}</div>
+      <div class="stat-sub">Активных: ${s.active_users}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">VIP пользователей</div>
+      <div class="stat-value stat-gold">${s.vip_users}</div>
+      <div class="stat-sub">Free аккаунты: ${s.free_users}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Всего обращений</div>
+      <div class="stat-value stat-mint">${s.total_messages}</div>
+      <div class="stat-sub">Непрочитанных: <span style="color:var(--red); font-weight:bold;">${s.unread_messages}</span></div>
+    </div>
+    <div class="stat-card" >
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div class="stat-label">Пользователи онлайн</div>
+        <span style="display: flex; align-items: center; gap: 6px; font-family: var(--f-mono); font-size: 0.75rem; color: var(--mint); font-weight: 600;">
+          <span class="pulse-dot"></span> LIVE
+        </span>
+      </div>
+      <div id="stats-online-count" style="font-family: var(--f-display); font-size: 2.2rem; color: var(--ink); font-weight: 700; margin-top: 10px; text-shadow: 0 0 15px rgba(0, 255, 168, 0.25);">
+        ${s.online_users}
+      </div>
+      <div class="stat-sub" style="margin-top:4px;">из ${s.total_users} всего</div>
+    </div>
+  `;
+
+  const maxCount = Math.max(...s.registrations_7d.map(d => d.count), 1);
+  document.getElementById('bar-chart').innerHTML = s.registrations_7d.map(d => `
+    <div class="bar-wrap">
+      <div class="bar-val">${d.count || 0}</div> 
+      
+      <div class="bar-body-wrap">
+        <div class="bar" style="height: ${Math.max((d.count / maxCount) * 100, d.count > 0 ? 8 : 4)}%"></div>
+      </div>
+      
+      <div class="bar-label">${d.date}</div>
+    </div>
+  `).join('');
+
+  const total = s.vip_users + s.free_users || 1;
+  const circ = 2 * Math.PI * 28;
+  const vipArc = (s.vip_users / total) * circ;
+  const freeArc = circ - vipArc;
+  
+  document.getElementById('donut-vip').setAttribute('stroke-dasharray', `${vipArc} ${freeArc}`);
+  document.getElementById('donut-free').setAttribute('stroke-dasharray', `${freeArc} ${vipArc}`);
+  document.getElementById('donut-free').setAttribute('stroke-dashoffset', `${44 - vipArc}`);
+  document.getElementById('legend-vip').textContent = `VIP: ${s.vip_users}`;
+  document.getElementById('legend-free').textContent = `Free: ${s.free_users}`;
+
+  // ── Круг «Онлайн / Офлайн» ──────────────────────────────────────────────
+  const totalOL = s.online_users + s.offline_users || 1;
+  const onlineArc  = (s.online_users / totalOL) * circ;
+  const offlineArc = circ - onlineArc;
+
+  document.getElementById('donut-online').setAttribute('stroke-dasharray', `${onlineArc} ${offlineArc}`);
+  document.getElementById('donut-offline').setAttribute('stroke-dasharray', `${offlineArc} ${onlineArc}`);
+  document.getElementById('donut-offline').setAttribute('stroke-dashoffset', `${44 - onlineArc}`);
+  document.getElementById('legend-online').textContent = `Онлайн: ${s.online_users}`;
+  document.getElementById('legend-offline').textContent = `Офлайн: ${s.offline_users}`;
+}
+
+// ── Analytics (статистика использования JARVIS) ─────────────────────────────
+// Человекочитаемые названия для type события — приходит как cmd_id/тип
+// действия из jarvis_analytics.py. Неизвестные типы просто показываем как есть.
+const ANALYTICS_LABELS = {
+  timer_set:          'Таймер: установка',
+  timer_cancel:       'Таймер: отмена',
+  timer_list:         'Таймер: список',
+  clipboard_translate:'Буфер обмена: перевод',
+  clipboard_analyze:  'Буфер обмена: анализ',
+  clipboard_read:     'Буфер обмена: чтение',
+  screenshot:         'Скриншот + анализ',
+  vol_up:             'Громкость: увеличить',
+  vol_down:           'Громкость: уменьшить',
+  vol_mute:           'Громкость: без звука',
+  vol_default:        'Громкость: по умолчанию',
+  vol_set:            'Громкость: установить %',
+  note_add:           'Заметки: добавить',
+  note_list:          'Заметки: список',
+  note_delete:        'Заметки: удалить',
+  check_updates:      'Проверка обновлений',
+  update_history:     'История обновлений',
+  open_youtube:       'Открыть YouTube',
+  open_rutube:        'Открыть Rutube',
+  browser_search:     'Поиск в Google',
+  open_site:          'Открыть сайт',
+  open_app_local:     'Открыть приложение',
+  close_app_local:    'Закрыть приложение',
+  local_time:         'Спросили время',
+  local_date:         'Спросили дату',
+  sys_shutdown:       'Выключить компьютер',
+  sys_restart:        'Перезагрузить компьютер',
+  open_folder:        'Открыть папку',
+  ai_query:           'Обычный запрос к ИИ',
+  app_start:          'Запуск JARVIS',
+  app_close:          'Выключение JARVIS',
+  settings_opened:    'Открыты настройки',
+  history_opened:     'Открыта история чата',
+};
+function analyticsLabel(type) {
+  return ANALYTICS_LABELS[type] || type;
+}
+
+// Иконки (пути в стиле feather, viewBox 24x24) — по одной на каждый тип
+// события, чтобы блоки в «Все функции» отличались визуально, не только текстом.
+const ANALYTICS_ICONS = {
+  timer_set:           '<circle cx="12" cy="13" r="8"/><path d="M12 9v4l3 2"/><path d="M5 3L3 5M19 3l2 2"/>',
+  timer_cancel:        '<circle cx="12" cy="13" r="8"/><path d="M9.5 11.5l5 5M14.5 11.5l-5 5"/><path d="M5 3L3 5M19 3l2 2"/>',
+  timer_list:          '<path d="M8 6h13M8 12h13M8 18h13"/><circle cx="3.5" cy="6" r="1"/><circle cx="3.5" cy="12" r="1"/><circle cx="3.5" cy="18" r="1"/>',
+  clipboard_translate: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 010 18M12 3a15 15 0 000 18"/>',
+  clipboard_analyze:   '<rect x="4" y="4" width="11" height="16" rx="2"/><path d="M7.5 4V3a1 1 0 011-1h3a1 1 0 011 1v1"/><circle cx="17.5" cy="17.5" r="3"/><path d="M20 20l2 2"/>',
+  clipboard_read:      '<rect x="6" y="3" width="12" height="18" rx="2"/><path d="M9 3V2a1 1 0 011-1h4a1 1 0 011 1v1"/><path d="M9 11h6M9 15h6"/>',
+  screenshot:          '<rect x="3" y="7" width="18" height="13" rx="2"/><circle cx="12" cy="13.5" r="3.5"/><path d="M9 7l1.3-2h3.4L15 7"/>',
+  vol_up:              '<path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M17 8a5 5 0 010 8M19.5 5.5a9 9 0 010 13"/>',
+  vol_down:            '<path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M17 8a5 5 0 010 8"/>',
+  vol_mute:            '<path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M17 9l5 6M22 9l-5 6"/>',
+  vol_default:         '<path d="M4 9v6h4l5 4V5L8 9H4z"/>',
+  vol_set:             '<path d="M4 21V14M4 10V3M12 21v-8M12 9V3M20 21v-4M20 13V3"/><path d="M2 14h4M10 9h4M18 13h4"/>',
+  note_add:            '<circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/>',
+  note_list:           '<path d="M14 3H6a2 2 0 00-2 2v14a2 2 0 002 2h12a2 2 0 002-2V9z"/><path d="M14 3v6h6"/><path d="M9 13h6M9 17h6"/>',
+  note_delete:         '<path d="M4 7h16M9 7V4h6v3M6 7l1 13a2 2 0 002 2h6a2 2 0 002-2l1-13"/>',
+  check_updates:       '<path d="M4 12a8 8 0 0114-5.3M20 12a8 8 0 01-14 5.3"/><path d="M18 4v5h-5M6 20v-5h5"/>',
+  update_history:      '<path d="M3 3v5h5"/><path d="M3.5 9a9 9 0 1012.6-8.4"/><path d="M12 8v4l3 2"/>',
+  open_youtube:        '<rect x="2" y="6" width="20" height="12" rx="3"/><path d="M10 9l5 3-5 3V9z" fill="currentColor" stroke="none"/>',
+  open_rutube:         '<circle cx="12" cy="12" r="9"/><path d="M10 8l6 4-6 4V8z" fill="currentColor" stroke="none"/>',
+  browser_search:      '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 8h18"/><circle cx="11" cy="14" r="2.3"/><path d="M13.3 16.3L16 19"/>',
+  open_site:           '<path d="M14 4h6v6M20 4l-9 9"/><path d="M18 13v5a2 2 0 01-2 2H6a2 2 0 01-2-2V8a2 2 0 012-2h5"/>',
+  open_app_local:      '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>',
+  close_app_local:     '<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 9l6 6M15 9l-6 6"/>',
+  local_time:          '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  local_date:          '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/>',
+  sys_shutdown:        '<path d="M12 3v8"/><path d="M6.3 6.3a8 8 0 1011.4 0"/>',
+  sys_restart:         '<path d="M3 12a9 9 0 109-9"/><path d="M3 3v6h6"/>',
+  open_folder:         '<path d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"/>',
+  ai_query:            '<circle cx="12" cy="12" r="9"/><path d="M8 10h.01M12 10h.01M16 10h.01"/>',
+  app_start:           '<circle cx="12" cy="12" r="9"/><path d="M10 8l6 4-6 4V8z" fill="currentColor" stroke="none"/>',
+  app_close:           '<path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/>',
+  settings_opened:     '<circle cx="12" cy="12" r="3.2"/><path d="M19 15a1.7 1.7 0 00.3 1.9 2 2 0 11-2.8 2.8 1.7 1.7 0 00-1.9-.3 1.7 1.7 0 00-1 1.6 2 2 0 11-4 0 1.7 1.7 0 00-1-1.5 1.7 1.7 0 00-1.9.3 2 2 0 11-2.8-2.8A1.7 1.7 0 005 15a1.7 1.7 0 00-1.5-1 2 2 0 110-4A1.7 1.7 0 005 9a1.7 1.7 0 00-.3-1.9 2 2 0 112.8-2.8A1.7 1.7 0 009 4.5a1.7 1.7 0 001-1.5 2 2 0 114 0 1.7 1.7 0 001 1.5 1.7 1.7 0 001.9-.3 2 2 0 112.8 2.8A1.7 1.7 0 0019 9a1.7 1.7 0 001.5 1 2 2 0 110 4 1.7 1.7 0 00-1.5 1z"/>',
+  history_opened:      '<path d="M3 12h4l2-7 4 14 2-7h6"/>',
+};
+function analyticsIcon(type) {
+  return ANALYTICS_ICONS[type] ||
+    '<circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/>'; // запасная иконка для неизвестных типов
+}
+
+let _analyticsDays = 30;
+
+function switchAnalyticsPeriod(days, btn) {
+  _analyticsDays = days;
+  document.querySelectorAll('#analytics-period-tabs .tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  loadAnalytics();
+}
+
+async function loadAnalytics() {
+  const s = await apiFetch(`/admin/analytics/summary?days=${_analyticsDays}`);
+  if (!s) return;
+
+  const periodLabels = { 7: 'за 7 дней', 30: 'за 30 дней', 90: 'за 90 дней', 3650: 'за всё время' };
+  document.getElementById('analytics-period-label').textContent = periodLabels[_analyticsDays] || `за ${_analyticsDays} дн.`;
+
+  // ── Стат-карты ────────────────────────────────────────────────────────
+  const top = s.by_type[0];
+  const avgPerDay = s.total_events / Math.max(_analyticsDays, 1);
+  const todayCount = s.daily_totals_14d.length ? s.daily_totals_14d[s.daily_totals_14d.length - 1].count : 0;
+
+  document.getElementById('analytics-stat-grid').innerHTML = `
+    <div class="stat-card highlight">
+      <div class="stat-label">Всего событий</div>
+      <div class="stat-value stat-cyan">${s.total_events}</div>
+      <div class="stat-sub">${periodLabels[_analyticsDays] || ''}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Самая частая функция</div>
+      <div class="stat-value stat-gold" style="font-size:1.15rem; line-height:1.3;">${top ? esc(analyticsLabel(top.type)) : '—'}</div>
+      <div class="stat-sub">${top ? `${top.count} раз` : 'нет данных'}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Событий сегодня</div>
+      <div class="stat-value stat-mint">${todayCount}</div>
+      <div class="stat-sub">за последние 24ч (по дате)</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">В среднем в день</div>
+      <div class="stat-value">${avgPerDay.toFixed(1)}</div>
+      <div class="stat-sub">${s.by_type.length} типов действий всего</div>
+    </div>
+  `;
+
+  // ── График активности по дням (всегда 14 дней от сервера) ──────────────
+  const maxDay = Math.max(...s.daily_totals_14d.map(d => d.count), 1);
+  document.getElementById('analytics-bar-chart').innerHTML = s.daily_totals_14d.map(d => `
+    <div class="bar-wrap">
+      <div class="bar-val">${d.count || 0}</div>
+      <div class="bar-body-wrap">
+        <div class="bar" style="height: ${Math.max((d.count / maxDay) * 100, d.count > 0 ? 8 : 4)}%"></div>
+      </div>
+      <div class="bar-label">${d.date}</div>
+    </div>
+  `).join('');
+
+  // ── Топ функций (ранжированный список с полосами) ──────────────────────
+  const rankListEl = document.getElementById('analytics-rank-list');
+  if (s.by_type.length === 0) {
+    rankListEl.innerHTML = `<p style="color:var(--dim); text-align:center; padding:12px 0;">Пока нет данных за этот период</p>`;
+    return;
+  }
+  const maxType = s.by_type[0].count || 1;
+  rankListEl.innerHTML = s.by_type.map((t, i) => `
+    <div class="rank-row">
+      <div class="rank-pos">${i + 1}</div>
+      <div class="rank-body">
+        <div class="rank-head">
+          <span class="rank-label">${esc(analyticsLabel(t.type))}</span>
+          <span class="rank-count">${t.count}</span>
+        </div>
+        <div class="rank-track"><div class="rank-fill" style="width:${Math.max((t.count / maxType) * 100, 3)}%"></div></div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ── Переключение «обычная статистика» ↔ «все функции» ──────────────────────
+let _allFunctionsData = null;   // кэш последнего ответа сервера (сегодня/вчера/неделя/месяц/всё время)
+let _allFunctionsPeriod = 'today';
+
+function showAllFunctionsView() {
+  document.getElementById('analytics-top-bar').style.display = 'none';
+  document.getElementById('analytics-default-view').style.display = 'none';
+  document.getElementById('all-functions-view').style.display = 'flex';
+  loadAllFunctionsTable();
+}
+
+function hideAllFunctionsView() {
+  document.getElementById('all-functions-view').style.display = 'none';
+  document.getElementById('analytics-top-bar').style.display = 'flex';
+  document.getElementById('analytics-default-view').style.display = 'flex';
+}
+
+function switchAllFunctionsPeriod(period, btn) {
+  _allFunctionsPeriod = period;
+  document.querySelectorAll('#all-functions-period-tabs .tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderAllFunctionsBlocks();
+}
+
+const ALL_FUNCTIONS_PERIOD_COLOR = {
+  today: 'stat-mint',
+  yesterday: 'stat-cyan',
+  week: 'stat-cyan',
+  month: 'stat-gold',
+  all_time: 'stat-cyan',
+};
+
+async function loadAllFunctionsTable() {
+  const contentEl = document.getElementById('all-functions-content');
+  contentEl.innerHTML = `<div class="loader">Загрузка...</div>`;
+
+  const data = await apiFetch('/admin/analytics/functions-all');
+  if (!data) { contentEl.innerHTML = `<p style="color:var(--dim); text-align:center; padding:20px;">Не удалось загрузить данные</p>`; return; }
+
+  // ── Сводим воедино: известные функции (ANALYTICS_LABELS) + всё, что   ──
+  // пришло с сервера. Так функции без единого события тоже попадают в
+  // список — просто с нулями по всем периодам, вместо того чтобы пропасть.
+  const byType = {};
+  Object.keys(ANALYTICS_LABELS).forEach(type => {
+    byType[type] = { type, today: 0, yesterday: 0, week: 0, month: 0, all_time: 0 };
+  });
+  (data.functions || []).forEach(f => { byType[f.type] = f; });
+
+  _allFunctionsData = Object.values(byType);
+  renderAllFunctionsBlocks();
+}
+
+function renderAllFunctionsBlocks() {
+  const contentEl = document.getElementById('all-functions-content');
+  if (!_allFunctionsData || _allFunctionsData.length === 0) {
+    contentEl.innerHTML = `<p style="color:var(--dim); text-align:center; padding:20px;">Пока нет ни одного зафиксированного события</p>`;
+    return;
+  }
+
+  const period = _allFunctionsPeriod;
+  const colorClass = ALL_FUNCTIONS_PERIOD_COLOR[period] || 'stat-cyan';
+  // Самые популярные функции — всегда наверху: сортировка по убыванию счётчика
+  // выбранного периода (при равенстве — по алфавиту названия, для стабильности).
+  const sorted = [..._allFunctionsData].sort((a, b) => {
+    const diff = (b[period] || 0) - (a[period] || 0);
+    if (diff !== 0) return diff;
+    return analyticsLabel(a.type).localeCompare(analyticsLabel(b.type), 'ru');
+  });
+
+  contentEl.innerHTML = sorted.map((f, i) => {
+    const count = f[period] || 0;
+    const isTop = count > 0 && i < 3;
+    return `
+      <div class="stat-card${isTop ? ' func-top' : ''}">
+        <div class="func-card-head">
+          <div class="func-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${analyticsIcon(f.type)}</svg></div>
+          <div class="func-card-label">${esc(analyticsLabel(f.type))}</div>
+          ${isTop ? `<span class="func-rank-badge">#${i + 1}</span>` : ''}
+        </div>
+        <div class="stat-value ${colorClass}">${count}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ── Users ─────────────────────────────────────────────────────────────────────
+function debounceUsers() {
+  clearTimeout(_searchTimer);
+  _searchTimer = setTimeout(loadUsers, 320);
+}
+
+async function loadUsers() {
+  const search = document.getElementById('user-search').value.trim();
+  const plan   = document.getElementById('user-plan').value;
+  let url = '/admin/users?limit=100';
+  if (search) url += '&search=' + encodeURIComponent(search);
+  if (plan)   url += '&plan=' + plan;
+
+  document.getElementById('users-table-wrap').innerHTML = '<div class="loader">Загрузка...</div>';
+  const users = await apiFetch(url);
+  if (!users) return;
+
+  if (!users.length) {
+    document.getElementById('users-table-wrap').innerHTML = `<div class="empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Пользователи не найдены</div>`;
+    return;
+  }
+
+  users.sort((a, b) => a.id - b.id);
+
+  document.getElementById('users-table-wrap').innerHTML = `
+    <div class="table-scroll" style="overflow-x:auto;">
+    <table style="min-width:780px;">
+      <thead><tr>
+        <th>#</th><th>Пользователь</th><th>Email</th>
+        <th>Статус</th><th>План / Код VIP</th><th>VIP до</th>
+        <th>Регистрация</th><th style="white-space:nowrap;">Действия</th>
+      </tr></thead>
+      <tbody>
+        ${users.map(u => `
+          <tr>
+            <td class="mono">${u.id}</td>
+            <td style="white-space:nowrap;"><strong>${esc(u.username)}</strong>${u.is_admin ? ' <span class="badge" style="background:rgba(255,60,90,.1);color:var(--red);border:1px solid rgba(255,60,90,.2);font-size:.6rem;">ADMIN</span>' : ''}</td>
+            <td class="mono" style="color:var(--dim)">${esc(u.email)}</td>
+            <td>${u.is_active
+              ? '<span class="badge badge-active">Активен</span>'
+              : '<span class="badge badge-blocked">Заблокирован</span>'}</td>
+            <td style="white-space:nowrap;">
+              ${u.plan === 'vip'
+                ? `<div style="display:inline-flex; align-items:center; gap:6px;">
+                     <span class="badge badge-vip">⭐ VIP</span>
+                     ${u.vip_code ? `
+                       <span id="vipCode-${u.id}" data-code="${esc(u.vip_code)}" data-visible="false" style="font-family:var(--f-mono); font-size:.72rem; color:var(--gold); letter-spacing:.04em; min-width:11ch; display:inline-block;">${maskCode(u.vip_code)}</span>
+                       <button class="act-btn act-copy" style="padding:2px 6px; font-size:.65rem; border-color:rgba(0,180,255,.25); line-height:0;" onclick="toggleAdminVipCode(${u.id})" id="vipEyeBtn-${u.id}" title="Показать код">
+                         <svg id="vipEyeIcon-${u.id}" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:block;">
+                           <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                           <circle cx="12" cy="12" r="3"></circle>
+                         </svg>
+                       </button>
+                       <button class="act-btn act-copy" style="padding:2px 6px; font-size:.65rem; border-color:rgba(255,210,74,.3);" onclick="copyToClipboard('${esc(u.vip_code)}')" title="Скопировать код">⎘</button>
+                     ` : '<span style="font-family:var(--f-mono); font-size:.72rem; color:var(--gold);">—</span>'}
+                   </div>`
+                : '<span class="badge badge-free">Free</span>'
+              }
+            </td>
+            <td class="mono" style="font-size:.75rem;color:var(--dim);white-space:nowrap;">${u.vip_expires_at ? fmtDate(u.vip_expires_at) : '—'}</td>
+            <td class="mono" style="font-size:.73rem;color:var(--dim);white-space:nowrap;">${fmtDate(u.created_at)}</td>
+            <td>
+              <div class="actions" style="flex-wrap:nowrap;">
+                <button class="${u.is_active ? 'act-btn act-block' : 'act-btn act-unblock'}"
+                  onclick="toggleBlock(${u.id},'${esc(u.username)}',${u.is_active})">
+                  ${u.is_active ? '🔒 Блок' : '✓ Разблок'}
+                </button>
+                ${u.plan === 'vip'
+                  ? `<button class="act-btn act-del" style="border-color:rgba(255,94,114,.3); color:var(--orange);" onclick="openRevokeVipModal(${u.id},'${esc(u.username)}')">⊘ Забрать VIP</button>`
+                  : `<button class="act-btn act-vip" onclick="openVipModal(${u.id},'${esc(u.username)}')">⭐ VIP</button>`
+                }
+                ${!u.is_admin ? `<button class="act-btn act-del" onclick="openDeleteModal(${u.id},'${esc(u.username)}')">✕</button>` : ''}
+              </div>
+            </td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+    </div>`;
+}
+
+async function toggleBlock(id, username, isActive) {
+  const data = await apiFetch(`/admin/users/${id}/block`, { method: 'POST' });
+  if (!data) return;
+  toast(data.message, data.success ? 'ok' : 'error');
+  loadUsers();
+}
+
+function openDeleteModal(id, username) {
+  document.getElementById('modal-delete-text').textContent = `Удалить пользователя «${username}»? Это действие необратимо.`;
+  document.getElementById('modal-delete-confirm').onclick = async () => {
+    closeModal('modal-delete');
+    const data = await apiFetch(`/admin/users/${id}`, { method: 'DELETE' });
+    if (!data) return;
+    toast(data.message, data.success ? 'ok' : 'error');
+    loadUsers();
+  };
+  document.getElementById('modal-delete').classList.add('open');
+}
+
+function openVipModal(id, username) {
+  document.getElementById('modal-vip-text').textContent = `Выдать VIP статус и сгенерировать уникальный код кастомизации для пользователя «${username}».`;
+  document.getElementById('modal-vip-confirm').onclick = async () => {
+    const days = parseInt(document.getElementById('vip-days-input').value) || 30;
+    closeModal('modal-vip');
+    const data = await apiFetch(`/admin/users/${id}/vip`, {
+      method: 'POST',
+      body: JSON.stringify({ duration_days: days }),
+    });
+    if (!data) return;
+    toast(data.message, data.success ? 'ok' : 'error');
+    loadUsers();
+  };
+  document.getElementById('modal-vip').classList.add('open');
+}
+
+function openRevokeVipModal(id, username) {
+  document.getElementById('modal-revoke-vip-text').textContent = `Забрать VIP-статус у пользователя «${username}»? Его код будет немедленно деактивирован — JARVIS перестанет принимать его при следующей проверке.`;
+  document.getElementById('modal-revoke-vip-confirm').onclick = async () => {
+    closeModal('modal-revoke-vip');
+    const data = await apiFetch(`/admin/users/${id}/revoke-vip`, { method: 'POST' });
+    if (!data) return;
+    toast(data.message, data.success ? 'ok' : 'error');
+    loadUsers();
+  };
+  document.getElementById('modal-revoke-vip').classList.add('open');
+}
+
+// ── Messages ──────────────────────────────────────────────────────────────────
+async function loadMessages() {
+  const unreadOnly = document.getElementById('unread-only').checked;
+  let url = '/admin/messages?limit=100';
+  if (unreadOnly) url += '&unread_only=true';
+
+  document.getElementById('messages-table-wrap').innerHTML = '<div class="loader">Загрузка...</div>';
+  const msgs = await apiFetch(url);
+  if (!msgs) return;
+
+  if (!msgs.length) {
+    document.getElementById('messages-table-wrap').innerHTML = `<div class="empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>Нет обращений</div>`;
+    return;
+  }
+
+  document.getElementById('messages-table-wrap').innerHTML = `
+    <table>
+      <thead><tr><th>#</th><th>Email</th><th>Сообщение</th><th>Дата</th><th>Статус</th><th>Действия</th></tr></thead>
+      <tbody>
+        ${msgs.map(m => `
+          <tr style="${!m.is_read ? 'background:rgba(0,180,255,.03)' : ''}">
+            <td class="mono">${m.id}</td>
+            <td class="mono" style="color:var(--dim)">${esc(m.email)}</td>
+            <td style="max-width:340px;word-break:break-word;font-size:.82rem">${esc(m.message)}</td>
+            <td class="mono" style="font-size:.73rem;color:var(--dim)">${fmtDate(m.created_at)}</td>
+            <td>${m.is_read
+              ? '<span class="badge badge-active" style="font-size:.65rem">Прочитано</span>'
+              : '<span class="badge" style="background:rgba(0,180,255,.1);color:var(--cyan);border:1px solid rgba(0,180,255,.25);font-size:.65rem">Новое</span>'}</td>
+            <td>
+              ${!m.is_read ? `<button class="act-btn act-read" onclick="markRead(${m.id})">✓ Прочитано</button>` : ''}
+            </td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>`;
+}
+
+async function markRead(id) {
+  const data = await apiFetch(`/admin/messages/${id}/read`, { method: 'POST' });
+  if (!data) return;
+  toast('Помечено как прочитанное', 'ok');
+  loadMessages();
+  loadDashboard();
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function esc(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function fmtDate(iso) {
+  const d = new Date(iso);
+  return d.toLocaleString('ru-RU',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+}
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+function copyToClipboard(text) {
+  navigator.clipboard.writeText(text).then(() => {
+    toast('Код кастомизации скопирован!', 'ok');
+  }).catch(() => {
+    toast('Не удалось скопировать код', 'error');
+  });
+}
+
+// ── Маска VIP-кода в таблице пользователей (показать/скрыть «глазом») ────────
+function maskCode(code) {
+  if (!code) return '—';
+  // Сохраняет структуру JRVS-XXXX-XXXX-XXXX, заменяя символы на «•»,
+  // чтобы было видно что код есть, но сам он не светился на экране.
+  return code.replace(/[A-Za-z0-9]/g, '•');
+}
+
+function toggleAdminVipCode(userId) {
+  const span = document.getElementById(`vipCode-${userId}`);
+  const icon = document.getElementById(`vipEyeIcon-${userId}`);
+  const btn  = document.getElementById(`vipEyeBtn-${userId}`);
+  if (!span) return;
+
+  const code = span.dataset.code;
+  const nowVisible = span.dataset.visible !== 'true';
+  span.dataset.visible = String(nowVisible);
+  span.textContent = nowVisible ? code : maskCode(code);
+  btn.title = nowVisible ? 'Скрыть код' : 'Показать код';
+
+  icon.innerHTML = nowVisible
+    // «глаз перечёркнут» — код сейчас виден, клик скроет
+    ? '<path d="M17.94 17.94A10.94 10.94 0 0112 20c-7 0-11-8-11-8a21.8 21.8 0 015.06-6.06M9.9 4.24A10.94 10.94 0 0112 4c7 0 11 8 11 8a21.8 21.8 0 01-3.22 4.4M14.12 14.12a3 3 0 11-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line>'
+    // «открытый глаз» — код сейчас скрыт, клик покажет
+    : '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle>';
+}
+
+document.querySelectorAll('.modal-overlay').forEach(el => {
+  el.addEventListener('click', e => { if (e.target === el) el.classList.remove('open'); });
+});
+
+function toast(msg, type = 'ok') {
+  const container = document.getElementById('toast');
+  const el = document.createElement('div');
+  el.className = 'toast-item toast-' + (type === 'ok' ? 'ok' : 'err');
+  el.textContent = msg;
+  container.appendChild(el);
+  setTimeout(() => el.remove(), 3500);
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+(async () => {
+  if (!getToken()) { redirectLogin(); return; }
+  await checkAdmin();
+  loadDashboard();
+})();
+
+
+// ── Журнал обновлений: хранится в общей БД (таблица `updates`), доступен ──────
+// всем посетителям сайта через GET /api/updates и /api/updates/featured.
+// Админка читает/пишет через защищённые /api/admin/updates эндпоинты.
+let updatesData = [];
+
+// Переключение табов внутри вкладки Обновлений
+function switchUpdateTab(tabId) {
+  document.querySelectorAll('.update-tab-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+
+  document.getElementById(tabId).classList.add('active');
+  event.target.classList.add('active');
+
+  if (tabId === 'tab-homepage-cards') renderHomepageCardsPicker();
+}
+
+// ── Загрузка журнала с сервера ────────────────────────────────────────────────
+async function loadUpdates() {
+  const data = await apiFetch('/admin/updates');
+  updatesData = data || [];
+  renderUpdatesTable();
+}
+
+// Рендер таблицы истории записей журнала
+function renderUpdatesTable() {
+  const tbody = document.getElementById('updates-table-body');
+  if (!tbody) return;
+
+  if (updatesData.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--dim); padding: 20px;">Журнал пуст — добавьте первую запись слева</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = updatesData.map(u => {
+    const itemsCount = Array.isArray(u.changelog) ? u.changelog.length : 0;
+    const featuredBadge = u.featured
+      ? `<span style="background: rgba(0,255,168,0.12); color: #00ffa8; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; border: 1px solid rgba(0,255,168,0.3); margin-left:6px;">на главной</span>`
+      : '';
+    return `
+      <tr>
+        <td style="font-weight: 600; color: var(--cyan); font-family: var(--f-mono);">${esc(u.version)}</td>
+        <td style="color: var(--dim); font-size: 0.85rem;">${fmtDate(u.release_date)}</td>
+        <td style="color: var(--ink); font-weight: 500;">${esc(u.title)}${featuredBadge}</td>
+        <td>
+          <span style="background: var(--bg3); color: var(--cyan); padding: 2px 8px; border-radius: 4px; font-size: 0.8rem; border: 1px solid var(--line);">
+            ${itemsCount} изм.
+          </span>
+        </td>
+        <td>
+          <div style="display: flex; gap: 6px; align-items: center;">
+            <button class="btn-cyan"
+                    style="width: 32px; height: 32px; padding: 0; display: flex; align-items: center; justify-content: center; height: auto;"
+                    title="Редактировать патч"
+                    onclick="editUpdate(${u.id})">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                <path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+              </svg>
+            </button>
+
+            <button class="btn-secondary"
+                    style="width: 32px; height: 32px; padding: 0; display: flex; align-items: center; justify-content: center; color: var(--orange); border-color: rgba(255,94,114,0.2); height: auto;"
+                    title="Удалить запись"
+                    onclick="deleteUpdate(${u.id})">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                <line x1="10" y1="11" x2="10" y2="17"></line>
+                <line x1="14" y1="11" x2="14" y2="17"></line>
+              </svg>
+            </button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+// Динамическое добавление строки пункта изменений (Тег + Текст + Кнопка удаления)
+function addChangelogRow(tag = 'new', text = '') {
+  const container = document.getElementById('changelog-rows-container');
+
+  const row = document.createElement('div');
+  row.className = 'changelog-row';
+  row.style.display = 'flex';
+  row.style.gap = '10px';
+  row.style.alignItems = 'center';
+
+  const safeText = text.replace(/"/g, '&quot;');
+
+  row.innerHTML = `
+    <select class="form-control changelog-item-tag" style="width: 140px; flex-shrink: 0; background: var(--bg3); cursor: pointer;">
+      <option value="new" ${tag === 'new' ? 'selected' : ''}>🟢 Новое</option>
+      <option value="improved" ${tag === 'improved' ? 'selected' : ''}>🟡 Улучшено</option>
+      <option value="fixed" ${tag === 'fixed' ? 'selected' : ''}>🔵 Исправлено</option>
+    </select>
+    <input type="text" class="form-control changelog-item-text" value="${safeText}" placeholder="Что именно было сделано..." style="flex-grow: 1;" required>
+    <button type="button" class="btn-secondary" style="padding: 0 12px; height: 38px; color: var(--orange); border-color: rgba(255,94,114,0.15); font-size: 0.9rem;" onclick="removeChangelogRow(this)">✕</button>
+  `;
+
+  container.appendChild(row);
+  container.scrollTop = container.scrollHeight;
+}
+
+function removeChangelogRow(btn) {
+  const container = document.getElementById('changelog-rows-container');
+  if (container.children.length > 1) {
+    btn.parentElement.remove();
+  } else {
+    btn.parentElement.querySelector('.changelog-item-text').value = '';
+  }
+}
+
+// Показ/скрытие выбора цвета плашки при отметке "на главной"
+document.addEventListener('DOMContentLoaded', () => {
+  const featuredCheckbox = document.getElementById('update-featured');
+  const colorGroup = document.getElementById('update-featured-color-group');
+  if (featuredCheckbox && colorGroup) {
+    featuredCheckbox.addEventListener('change', () => {
+      colorGroup.style.display = featuredCheckbox.checked ? 'block' : 'none';
+    });
+  }
+});
+
+// Сборка payload из формы и отправка на сервер (создание или обновление)
+async function saveUpdate(e) {
+  if (e) e.preventDefault();
+
+  const idInput = document.getElementById('update-id').value;
+  const version = document.getElementById('update-version').value.trim();
+  const date = document.getElementById('update-date').value;
+  const title = document.getElementById('update-title').value.trim();
+  const featured = document.getElementById('update-featured').checked;
+  const featuredColor = document.getElementById('update-featured-color').value;
+
+  const rowElements = document.querySelectorAll('.changelog-row');
+  const changelog = [];
+  rowElements.forEach(row => {
+    const tag = row.querySelector('.changelog-item-tag').value;
+    const text = row.querySelector('.changelog-item-text').value;
+    if (text.trim()) changelog.push({ tag, text: text.trim() });
+  });
+
+  if (!version || !date || !title) {
+    toast('Заполните версию, дату и заголовок', 'error');
+    return;
+  }
+  if (changelog.length === 0) {
+    toast('Добавьте хотя бы один текстовый пункт изменений!', 'error');
+    return;
+  }
+
+  const payload = {
+    version,
+    release_date: date,
+    title,
+    changelog,
+    featured,
+    featured_color: featured ? featuredColor : null,
+  };
+
+  const url = idInput ? `/admin/updates/${idInput}` : '/admin/updates';
+  const method = idInput ? 'PUT' : 'POST';
+  const result = await apiFetch(url, { method, body: JSON.stringify(payload) });
+  if (!result) return; // apiFetch уже показал toast с ошибкой
+
+  toast(idInput ? 'Патч успешно обновлён!' : 'Новый патч добавлен в журнал!', 'ok');
+  resetUpdateForm();
+  await loadUpdates();
+}
+
+// Клик по кнопке "Ред." — раскладывает запись обратно по полям формы
+function editUpdate(id) {
+  const u = updatesData.find(item => item.id == id);
+  if (!u) return;
+
+  document.getElementById('update-id').value = u.id;
+  document.getElementById('update-version').value = u.version;
+  document.getElementById('update-date').value = (u.release_date || '').slice(0, 10);
+  document.getElementById('update-title').value = u.title;
+  document.getElementById('update-featured').checked = !!u.featured;
+
+  const colorGroup = document.getElementById('update-featured-color-group');
+  const colorSelect = document.getElementById('update-featured-color');
+  colorGroup.style.display = u.featured ? 'block' : 'none';
+  if (u.featured_color) colorSelect.value = u.featured_color;
+
+  document.getElementById('changelog-rows-container').innerHTML = '';
+  if (Array.isArray(u.changelog)) {
+    u.changelog.forEach(item => addChangelogRow(item.tag, item.text));
+  }
+  if (document.getElementById('changelog-rows-container').children.length === 0) {
+    addChangelogRow();
+  }
+
+  document.getElementById('update-form-title').textContent = 'Редактировать патч ' + u.version;
+  document.getElementById('btn-cancel-update-edit').style.display = 'inline-block';
+  document.getElementById('update-form').scrollIntoView({ behavior: 'smooth' });
+}
+
+// Удаление записи журнала
+async function deleteUpdate(id) {
+  if (!confirm('Вы уверены, что хотите безвозвратно удалить информацию об этом обновлении?')) return;
+  const result = await apiFetch(`/admin/updates/${id}`, { method: 'DELETE' });
+  if (!result) return;
+
+  toast('Обновление удалено из журнала', 'ok');
+  await loadUpdates();
+}
+
+// Полная очистка формы
+function resetUpdateForm() {
+  document.getElementById('update-id').value = '';
+  document.getElementById('update-form').reset();
+  document.getElementById('update-form-title').textContent = 'Добавить обновление в журнал';
+  document.getElementById('btn-cancel-update-edit').style.display = 'none';
+  document.getElementById('update-featured-color-group').style.display = 'none';
+
+  document.getElementById('changelog-rows-container').innerHTML = '';
+  addChangelogRow();
+}
+
+// Предпросмотр патча перед сохранением
+function showUpdatePreview() {
+  const version = document.getElementById('update-version').value || 'v1.0.0-Beta';
+  const date = document.getElementById('update-date').value || 'Сегодня';
+  const title = document.getElementById('update-title').value || 'Новый модуль инициализации';
+
+  const rowElements = document.querySelectorAll('.changelog-row');
+  let rowsHtml = '';
+
+  rowElements.forEach(row => {
+    const tag = row.querySelector('.changelog-item-tag').value;
+    const text = row.querySelector('.changelog-item-text').value || 'Описание внесенного изменения...';
+
+    let badgeColor = 'var(--mint)';
+    let badgeLabel = 'NEW';
+    if (tag === 'improved') { badgeColor = 'var(--gold)'; badgeLabel = 'IMP'; }
+    else if (tag === 'fixed') { badgeColor = 'var(--cyan)'; badgeLabel = 'FIX'; }
+
+    rowsHtml += `
+      <div style="display: flex; align-items: flex-start; gap: 12px; margin-bottom: 10px; font-size: 0.88rem; line-height: 1.4;">
+        <span style="color: ${badgeColor}; border: 1px solid ${badgeColor}; padding: 1px 6px; border-radius: 4px; font-size: 0.68rem; font-weight: bold; font-family: var(--f-mono); letter-spacing: 0.05em; flex-shrink: 0; min-width: 32px; text-align: center; background: rgba(0,0,0,0.2);">
+          ${badgeLabel}
+        </span>
+        <span style="color: var(--ink); font-family: var(--f-main);">${esc(text)}</span>
+      </div>
+    `;
+  });
+
+  document.getElementById('preview-modal-content').innerHTML = `
+    <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; border-bottom: 1px solid var(--line); padding-bottom: 10px;">
+      <h4 style="font-family: var(--f-display); font-size: 1.2rem; color: var(--ink); margin: 0; letter-spacing: 0.02em;">${esc(title)}</h4>
+      <span style="font-family: var(--f-mono); color: var(--cyan); font-weight: bold; font-size: 0.95rem;">${esc(version)}</span>
+    </div>
+    <div style="color: var(--dim); font-size: 0.78rem; font-family: var(--f-mono); margin-bottom: 16px;">Релиз от: ${date}</div>
+    <div style="display: flex; flex-direction: column;">
+      ${rowsHtml}
+    </div>
+  `;
+
+  document.getElementById('preview-modal').style.display = 'flex';
+}
+
+function closePreviewModal() {
+  document.getElementById('preview-modal').style.display = 'none';
+}
+
+// ── Таб «Главная страница»: выбор до 3 записей журнала как featured ──────────
+function renderHomepageCardsPicker() {
+  const container = document.getElementById('homepage-cards-picker');
+  if (!container) return;
+
+  // Обновляем блок «Текущая версия»
+  refreshCurrentVersionDisplay();
+
+  if (updatesData.length === 0) {
+    container.innerHTML = `<p style="color:var(--dim); text-align:center; padding:20px;">Журнал пуст — сначала добавьте записи во вкладке «Журнал обновлений»</p>`;
+    return;
+  }
+
+  const featuredCount = updatesData.filter(u => u.featured).length;
+
+  container.innerHTML = updatesData.map(u => {
+    const checked = u.featured ? 'checked' : '';
+    const colorOptions = ['#00ffa8', '#ffd24a', '#00b4ff', '#ff5eeb'].map(c =>
+      `<option value="${c}" ${u.featured_color === c ? 'selected' : ''} style="background:${c}; color:#03060c;">${c}</option>`
+    ).join('');
+
+    return `
+      <div style="display:flex; align-items:center; gap:14px; padding:14px 16px; background:var(--bg2); border:1px solid var(--line); border-radius:8px;">
+        <input type="checkbox" data-update-id="${u.id}" class="homepage-featured-toggle" ${checked}
+               style="width:18px; height:18px; cursor:pointer; flex-shrink:0;"
+               onchange="toggleHomepageFeatured(${u.id}, this.checked)">
+        <div style="flex:1; min-width:0;">
+          <div style="font-family: var(--f-mono); color: var(--cyan); font-size:0.85rem;">${esc(u.version)}</div>
+          <div style="color: var(--ink); font-weight:500;">${esc(u.title)}</div>
+        </div>
+        <select class="form-control" style="width:140px; flex-shrink:0;" ${u.featured ? '' : 'disabled'}
+                onchange="setHomepageFeaturedColor(${u.id}, this.value)">
+          ${colorOptions}
+        </select>
+      </div>
+    `;
+  }).join('');
+
+  if (featuredCount >= 3) {
+    container.querySelectorAll('.homepage-featured-toggle:not(:checked)').forEach(cb => cb.disabled = true);
+  }
+}
+
+async function toggleHomepageFeatured(id, isChecked) {
+  const u = updatesData.find(item => item.id == id);
+  if (!u) return;
+
+  if (isChecked) {
+    const featuredCount = updatesData.filter(item => item.featured).length;
+    if (featuredCount >= 3) {
+      toast('Можно выбрать не более 3 обновлений для главной страницы', 'error');
+      renderHomepageCardsPicker();
+      return;
+    }
+  }
+
+  const payload = {
+    version: u.version,
+    release_date: (u.release_date || '').slice(0, 10),
+    title: u.title,
+    changelog: u.changelog,
+    featured: isChecked,
+    featured_color: isChecked ? (u.featured_color || '#00ffa8') : null,
+  };
+
+  const result = await apiFetch(`/admin/updates/${id}`, { method: 'PUT', body: JSON.stringify(payload) });
+  if (!result) { renderHomepageCardsPicker(); return; }
+
+  toast(isChecked ? `«${u.version}» добавлено на главную` : `«${u.version}» убрано с главной`, 'ok');
+  await loadUpdates();
+  renderHomepageCardsPicker();
+}
+
+async function setHomepageFeaturedColor(id, color) {
+  const u = updatesData.find(item => item.id == id);
+  if (!u) return;
+
+  const payload = {
+    version: u.version,
+    release_date: (u.release_date || '').slice(0, 10),
+    title: u.title,
+    changelog: u.changelog,
+    featured: true,
+    featured_color: color,
+  };
+
+  const result = await apiFetch(`/admin/updates/${id}`, { method: 'PUT', body: JSON.stringify(payload) });
+  if (!result) return;
+
+  toast('Цвет плашки обновлён', 'ok');
+  await loadUpdates();
+}
+
+// При первичной загрузке страницы — пустая дефолтная строка changelog
+document.addEventListener('DOMContentLoaded', () => {
+  const container = document.getElementById('changelog-rows-container');
+  if (container && container.children.length === 0) {
+    addChangelogRow();
+  }
+});
+
+// ── Текущая версия (отображается на главной странице) ─────────────────────────
+// Версия хранится на сервере через /api/admin/current-version (GET/PUT).
+// Если эндпоинт недоступен — подтягиваем последнюю запись из журнала напрямую.
+
+async function refreshCurrentVersionDisplay() {
+  // 1. Показываем последнюю запись из уже загруженного журнала
+  const latestVersionEl = document.getElementById('latest-update-version');
+  const latestTitleEl   = document.getElementById('latest-update-title');
+  const latestDateEl    = document.getElementById('latest-update-date');
+
+  if (updatesData.length > 0) {
+    const sorted = [...updatesData].sort((a, b) => new Date(b.release_date) - new Date(a.release_date));
+    const latest = sorted[0];
+    if (latestVersionEl) latestVersionEl.textContent = latest.version || '—';
+    if (latestTitleEl)   latestTitleEl.textContent   = latest.title   || '—';
+    if (latestDateEl)    latestDateEl.textContent     = latest.release_date ? fmtDate(latest.release_date) : '—';
+  } else {
+    if (latestVersionEl) latestVersionEl.textContent = 'Журнал пуст';
+    if (latestTitleEl)   latestTitleEl.textContent   = '';
+    if (latestDateEl)    latestDateEl.textContent     = '';
+  }
+
+  // 2. Показываем текущую версию сохранённую на сервере
+  const displayEl = document.getElementById('current-version-display');
+  const data = await apiFetch('/admin/current-version');
+  if (data && data.version) {
+    if (displayEl) displayEl.textContent = data.version;
+  } else if (updatesData.length > 0) {
+    // Сервер ещё не поддерживает этот эндпоинт — показываем последнюю
+    const sorted = [...updatesData].sort((a, b) => new Date(b.release_date) - new Date(a.release_date));
+    if (displayEl) displayEl.textContent = sorted[0].version || '—';
+  }
+}
+
+async function syncCurrentVersionFromLatest() {
+  if (updatesData.length === 0) {
+    toast('Журнал обновлений пуст — нечего синхронизировать', 'error');
+    return;
+  }
+  const sorted = [...updatesData].sort((a, b) => new Date(b.release_date) - new Date(a.release_date));
+  const latest = sorted[0];
+  await saveCurrentVersion(latest.version);
+}
+
+async function saveCurrentVersion(version) {
+  if (!version || !version.trim()) {
+    toast('Введите версию', 'error');
+    return;
+  }
+  const result = await apiFetch('/admin/current-version', {
+    method: 'PUT',
+    body: JSON.stringify({ version: version.trim() }),
+  });
+  if (!result) return;
+  toast(`Текущая версия обновлена → ${version.trim()}`, 'ok');
+  const displayEl = document.getElementById('current-version-display');
+  if (displayEl) displayEl.textContent = version.trim();
+  // Обновляем поле ручного ввода
+  const inputEl = document.getElementById('manual-version-input');
+  if (inputEl) inputEl.value = '';
+}
+
+async function saveCurrentVersionManual() {
+  const inputEl = document.getElementById('manual-version-input');
+  const version = inputEl ? inputEl.value.trim() : '';
+  if (!version) {
+    toast('Введите номер версии в поле', 'error');
+    return;
+  }
+  await saveCurrentVersion(version);
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,1578 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JARVIS — голосовой ассистент для вашего ПК</title>
+<link rel="icon" type="image/x-icon" href="jarvis.ico">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg0:#03060c;
+    --bg1:#0a0f18;
+    --bg2:#101a28;
+    --line:rgba(0,180,255,.16);
+    --line-soft:rgba(0,180,255,.08);
+    --ink:#dce8f5;
+    --ink-dim:#5f7a90;
+    --dim:#6c84a0;
+    --dim2:#3f5267;
+    --cyan:#00b4ff;
+    --cyan2:#5eebff;
+    --mint:#00ffa8;
+    --gold:#ffd24a;
+    --orange:#ff6a2e;
+
+    --f-display:'Rajdhani',sans-serif;
+    --f-body:'Inter',sans-serif;
+    --f-mono:'JetBrains Mono',monospace;
+  }
+
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--bg0);
+    color:var(--ink);
+    font-family:var(--f-body);
+    line-height:1.6;
+    overflow-x:hidden;
+  }
+
+  body::before{
+    content:'';
+    position:fixed; inset:0;
+    background:
+      radial-gradient(ellipse 900px 600px at 85% -10%, rgba(0,180,255,.10), transparent 60%),
+      radial-gradient(ellipse 700px 500px at 0% 90%, rgba(0,255,168,.05), transparent 60%);
+    pointer-events:none;
+    z-index:0;
+  }
+
+  /* grid texture */
+  body::after{
+    content:'';
+    position:fixed; inset:0;
+    background-image:
+      linear-gradient(var(--line-soft) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line-soft) 1px, transparent 1px);
+    background-size:64px 64px;
+    mask-image: radial-gradient(ellipse 70% 50% at 50% 0%, rgba(0,0,0,.5), transparent 70%);
+    pointer-events:none;
+    z-index:0;
+    opacity:.5;
+  }
+
+  .wrap{max-width:1180px; margin:0 auto; padding:0 28px; position:relative; z-index:1;}
+
+  a{color:inherit; text-decoration:none;}
+
+  .eyebrow{
+    font-family:var(--f-mono);
+    font-size:.72rem;
+    letter-spacing:.22em;
+    text-transform:uppercase;
+    color:var(--cyan);
+    display:flex; align-items:center; gap:10px;
+  }
+  .eyebrow::before{
+    content:'';
+    width:7px; height:7px; border-radius:50%;
+    background:var(--cyan);
+    box-shadow:0 0 10px var(--cyan);
+    flex:none;
+  }
+
+  h1,h2,h3,h4{font-family:var(--f-display); font-weight:700; letter-spacing:.01em;}
+
+  /* ============ NAVBAR ============ */
+  header.nav{
+    position:sticky; top:0; z-index:100;
+    backdrop-filter:blur(14px) saturate(140%);
+    background:rgba(4,8,16,.62);
+    border-bottom:1px solid var(--line);
+  }
+  .nav-inner{
+    max-width:1180px; margin:0 auto; padding:0 28px;
+    height:72px; display:flex; align-items:center; justify-content:space-between; gap:24px;
+  }
+  .logo{
+    display:flex; align-items:center; gap:12px;
+    font-family:var(--f-display); font-weight:700; font-size:1.35rem;
+    letter-spacing:.06em;
+  }
+  .logo-mark{
+    width:34px; height:34px; position:relative; flex:none;
+  }
+  .logo-mark svg{width:100%; height:100%; display:block;}
+  .logo-mark img{width:100%; height:100%; display:block; border-radius:50%; object-fit:cover;}
+  .logo small{
+    display:block; font-family:var(--f-mono); font-size:.6rem; letter-spacing:.2em;
+    color:var(--dim); font-weight:400; margin-top:1px;
+  }
+
+  .nav-links{
+    display:flex; align-items:center; gap:30px;
+    font-size:.92rem; font-weight:500; color:var(--ink);
+  }
+  .nav-links a{
+    position:relative; padding:6px 0; color:var(--dim);
+    transition:color .15s;
+  }
+  .nav-links a:hover{color:var(--ink);}
+  .nav-links a.has-dot{display:flex; align-items:center; gap:7px;}
+  .dot-new{
+    width:7px; height:7px; border-radius:50%;
+    background:var(--mint); box-shadow:0 0 8px var(--mint);
+    animation:pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.35;}}
+
+  .nav-actions{display:flex; align-items:center; gap:12px;}
+  .btn{
+    font-family:var(--f-display); font-weight:600; font-size:.88rem;
+    letter-spacing:.04em;
+    padding:10px 20px; border-radius:7px;
+    border:1px solid var(--line);
+    cursor:pointer; transition:all .15s;
+    display:inline-flex; align-items:center; gap:8px;
+    white-space:nowrap;
+  }
+  .btn-ghost{color:var(--ink); background:transparent;}
+  .btn-ghost:hover{border-color:var(--cyan); color:var(--cyan2);}
+  .btn-solid{
+    background:linear-gradient(135deg, var(--cyan), #0090e0);
+    border-color:transparent; color:#04101c;
+    box-shadow:0 0 0 1px rgba(0,180,255,.3), 0 8px 24px -8px rgba(0,180,255,.6);
+  }
+  .btn-solid:hover{filter:brightness(1.12);}
+  .btn-vip{
+    background:linear-gradient(135deg, var(--gold), #ff9a4a);
+    border-color:transparent; color:#241200;
+    box-shadow:0 0 0 1px rgba(255,210,74,.35), 0 8px 24px -8px rgba(255,170,60,.55);
+  }
+  .btn-vip:hover{filter:brightness(1.1);}
+  .btn-vip svg{width:15px; height:15px;}
+
+  .nav-burger{display:none; flex-direction:column; gap:5px; cursor:pointer; background:none; border:none;}
+  .nav-burger span{width:22px; height:2px; background:var(--ink);}
+
+  /* ============ HERO ============ */
+  .hero{
+    padding:96px 0 60px;
+    display:grid; grid-template-columns:1.05fr .95fr; gap:60px; align-items:center;
+  }
+  .hero h1{
+    font-size:3.4rem; line-height:1.06; margin:18px 0 22px;
+    text-transform:uppercase;
+  }
+  .hero h1 .accent{
+    color:var(--cyan2);
+    text-shadow:0 0 24px rgba(0,180,255,.5);
+  }
+  .hero p.lead{
+    font-size:1.08rem; color:var(--dim); max-width:480px; margin-bottom:34px;
+  }
+  .hero-cta{display:flex; gap:14px; flex-wrap:wrap;}
+  .btn-lg{padding:15px 28px; font-size:1rem; border-radius:9px;}
+
+  .hero-stats{
+    display:flex; gap:34px; margin-top:46px;
+    font-family:var(--f-mono);
+  }
+  .hero-stats div b{
+    display:block; font-family:var(--f-display); font-size:1.7rem; color:var(--ink);
+    font-weight:700;
+  }
+  .hero-stats div span{font-size:.7rem; letter-spacing:.14em; color:var(--dim); text-transform:uppercase;}
+
+  /* ===== HUD signature element ===== */
+  .hud{
+    position:relative;
+    aspect-ratio:1/1; max-width:430px; margin:0 auto;
+    border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .hud-ring{
+    position:absolute; inset:0; border-radius:50%;
+    border:1px solid var(--line);
+  }
+  .hud-ring.r2{inset:34px; border-style:dashed; border-color:var(--line-soft); animation:spin 60s linear infinite;}
+  .hud-ring.r3{inset:68px;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+
+  .hud-arc{
+    position:absolute; inset:0;
+    transform:rotate(-90deg);
+  }
+  .hud-arc circle{
+    fill:none; stroke-width:2;
+    stroke-dasharray:1; /* set via JS */
+    transition:stroke .6s ease, stroke-dashoffset 1.4s ease;
+  }
+
+  .hud-core{
+    width:62%; height:62%; border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, rgba(0,180,255,.16), rgba(8,14,24,.9) 70%);
+    border:1px solid var(--line);
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    text-align:center; gap:6px;
+    box-shadow:inset 0 0 60px rgba(0,180,255,.08);
+    transition:border-color .6s ease;
+  }
+  .hud-core .hud-dot{
+    width:14px; height:14px; border-radius:50%;
+    background:var(--cyan); box-shadow:0 0 22px 4px var(--cyan);
+    transition:background .6s ease, box-shadow .6s ease;
+    margin-bottom:10px;
+  }
+  .hud-core .hud-state{
+    font-family:var(--f-display); font-weight:700; font-size:1.05rem;
+    letter-spacing:.18em; transition:color .6s ease;
+  }
+  .hud-core .hud-sub{
+    font-family:var(--f-mono); font-size:.68rem; color:var(--dim);
+    letter-spacing:.05em; max-width:160px;
+  }
+
+  .hud-tick{
+    position:absolute; font-family:var(--f-mono); font-size:.65rem; color:var(--dim2);
+    letter-spacing:.12em;
+  }
+  .hud-tick.t-top{top:-26px; left:50%; transform:translateX(-50%);}
+  .hud-tick.t-bottom{bottom:-26px; left:50%; transform:translateX(-50%);}
+  .hud-tick.t-left{left:-10px; top:50%; transform:translate(-100%,-50%); text-align:right;}
+  .hud-tick.t-right{right:-10px; top:50%; transform:translate(100%,-50%);}
+
+  /* ============ SECTION SHELL ============ */
+  section{padding:90px 0; position:relative;}
+  .section-head{max-width:620px; margin-bottom:54px;}
+  .section-head h2{font-size:2.3rem; margin-top:14px; text-transform:uppercase;}
+  .section-head p{color:var(--dim); margin-top:14px; font-size:1.02rem;}
+  .divider{height:1px; background:var(--line); width:100%;}
+
+  /* ============ SCREENSHOTS ============ */
+  .shots{
+    display:grid; grid-template-columns:repeat(3,1fr); gap:24px;
+  }
+  .shot{
+    border:1px solid var(--line);
+    border-radius:12px;
+    background:linear-gradient(160deg, var(--bg2), var(--bg1));
+    overflow:hidden;
+    position:relative;
+  }
+  .shot-top{
+    height:140px; position:relative;
+    background:
+      radial-gradient(ellipse 200px 120px at 30% 20%, rgba(0,180,255,.18), transparent 60%),
+      linear-gradient(160deg, #0c1422, #060a12);
+    display:flex; align-items:center; justify-content:center;
+    border-bottom:1px solid var(--line);
+  }
+  .mock-bar{
+    display:flex; align-items:center; gap:10px;
+    padding:9px 16px; border-radius:30px;
+    background:rgba(8,14,24,.85);
+    border:1px solid var(--line);
+    font-family:var(--f-mono); font-size:.72rem; letter-spacing:.08em;
+    box-shadow:0 10px 30px -10px rgba(0,180,255,.3);
+  }
+  .mock-dot{width:9px; height:9px; border-radius:50%; flex:none;}
+  .mock-bars{display:flex; align-items:center; gap:2px; height:14px;}
+  .mock-bars i{width:2px; border-radius:1px; background:currentColor; display:block;}
+
+  .shot-body{padding:20px 22px 24px;}
+  .shot-body .eyebrow{margin-bottom:8px;}
+  .shot-body h4{font-size:1.05rem; margin-bottom:6px; text-transform:uppercase;}
+  .shot-body p{color:var(--dim); font-size:.88rem;}
+
+  /* ============ COMMANDS ============ */
+  .cmd-grid{
+    display:grid; grid-template-columns:repeat(3,1fr); gap:1px;
+    border:1px solid var(--line); border-radius:14px; overflow:hidden;
+    background:var(--line);
+  }
+  .cmd{
+    background:var(--bg1);
+    padding:26px 24px;
+    transition:background .15s;
+  }
+  .cmd:hover{background:var(--bg2);}
+  .cmd-icon{
+    width:38px; height:38px; margin-bottom:16px;
+    color:var(--cyan2);
+  }
+  .cmd-icon svg{width:100%; height:100%;}
+  .cmd h4{font-size:1.02rem; text-transform:uppercase; margin-bottom:8px; letter-spacing:.04em;}
+  .cmd ul{list-style:none; display:flex; flex-direction:column; gap:6px;}
+  .cmd li{
+    font-size:.85rem; color:var(--dim);
+    font-family:var(--f-mono);
+    padding-left:14px; position:relative;
+  }
+  .cmd li::before{
+    content:'›'; position:absolute; left:0; color:var(--cyan);
+  }
+
+  /* ============ VIP BANNER ============ */
+  .vip{
+    border:1px solid rgba(255,210,74,.28);
+    border-radius:16px;
+    background:linear-gradient(135deg, rgba(255,210,74,.08), rgba(255,106,46,.04));
+    padding:48px;
+    display:grid; grid-template-columns:1.2fr .8fr; gap:40px; align-items:center;
+    position:relative; overflow:hidden;
+  }
+  .vip::before{
+    content:'VIP';
+    position:absolute; right:-10px; top:-40px;
+    font-family:var(--f-display); font-weight:700; font-size:11rem;
+    color:rgba(255,210,74,.04); letter-spacing:.05em;
+    pointer-events:none;
+  }
+  .vip h2{font-size:2rem; text-transform:uppercase; color:#ffe7b0;}
+  .vip p{color:var(--dim); margin-top:12px; max-width:480px;}
+  .vip-feats{
+    display:flex; flex-direction:column; gap:14px;
+    font-family:var(--f-mono); font-size:.85rem;
+  }
+  .vip-feats div{display:flex; align-items:center; gap:10px;}
+  .vip-feats svg{width:16px; height:16px; color:var(--gold); flex:none;}
+  .vip-price{text-align:right;}
+  .vip-price .price{
+    font-family:var(--f-display); font-size:2.6rem; font-weight:700; color:#ffe7b0;
+  }
+  .vip-price .price span{font-size:1rem; color:var(--dim); font-weight:500;}
+  .vip-price .btn{margin-top:18px;}
+
+  /* ============ MODAL SYSTEM (AUTH / CABINET) ============ */
+  .modal-overlay{
+    position:fixed; inset:0; background:rgba(3,6,12,.85);
+    backdrop-filter:blur(16px); z-index:1000;
+    display:none; align-items:center; justify-content:center; padding:20px;
+    opacity:0; transition:opacity .3s ease;
+  }
+  .modal-overlay.active{display:flex; opacity:1;}
+  .modal-box{
+    background:linear-gradient(160deg, var(--bg2), var(--bg1));
+    border:1px solid var(--line); border-radius:16px;
+    width:100%; max-width:460px; padding:40px; position:relative;
+    box-shadow:0 24px 60px rgba(0,180,255,.1);
+    transform:translateY(-20px); transition:transform .3s ease;
+  }
+  .modal-overlay.active .modal-box{transform:translateY(0);}
+  .modal-close{
+    position:absolute; top:20px; right:20px; background:none; border:none;
+    color:var(--dim); cursor:pointer; font-size:1.5rem; transition:color .15s;
+  }
+  .modal-close:hover{color:var(--ink);}
+  
+  .auth-form{display:flex; flex-direction:column; gap:18px; margin-top:24px;}
+  .form-group{display:flex; flex-direction:column; gap:6px;}
+  .form-group label{font-family:var(--f-mono); font-size:.72rem; text-transform:uppercase; color:var(--dim); letter-spacing:.1em;}
+  .auth-form input{
+    background:var(--bg0); border:1px solid var(--line); border-radius:8px;
+    padding:12px 16px; color:var(--ink); font-family:var(--f-body); font-size:.92rem; outline:none;
+    transition:border-color .15s;
+  }
+  .auth-form input:focus{border-color:var(--cyan);}
+  .field-hint{font-family:var(--f-mono); font-size:.7rem; color:var(--dim2); letter-spacing:.04em;}
+  .auth-switch{font-size:.85rem; color:var(--dim); text-align:center; margin-top:14px;}
+  .auth-switch span{color:var(--cyan); cursor:pointer;}
+  .auth-switch span:hover{text-decoration:underline;}
+
+  /* Cabinet Details */
+  .cab-user{display:flex; align-items:center; gap:16px; margin-bottom:24px; padding-bottom:18px; border-bottom:1px solid var(--line-soft);}
+  .cab-avatar{width:54px; height:54px; border-radius:50%; background:var(--line); border:1px solid var(--cyan); display:flex; align-items:center; justify-content:center; color:var(--cyan); font-weight:700; font-family:var(--f-display); font-size:1.4rem;}
+  .cab-meta h4{font-size:1.2rem; text-transform:uppercase;}
+  .cab-meta span{font-family:var(--f-mono); font-size:.75rem; color:var(--dim);}
+  .cab-status-badge{display:inline-block; padding:4px 10px; border-radius:4px; font-family:var(--f-mono); font-size:.7rem; font-weight:600; text-transform:uppercase;}
+  .badge-vip{background:rgba(255,210,74,.1); color:var(--gold); border:1px solid rgba(255,210,74,.25);}
+
+  /* ============ FOOTER ============ */
+  footer{
+    border-top:1px solid var(--line);
+    padding:60px 0 28px;
+    background:linear-gradient(180deg, transparent, rgba(0,180,255,.03));
+  }
+  .foot-grid{
+    display:grid; grid-template-columns:1.4fr 1fr 1fr 1.2fr; gap:40px;
+    margin-bottom:48px;
+  }
+  .foot-grid h5{
+    font-family:var(--f-mono); font-size:.72rem; letter-spacing:.2em;
+    color:var(--dim); text-transform:uppercase; margin-bottom:16px;
+  }
+  .foot-grid ul{list-style:none; display:flex; flex-direction:column; gap:10px;}
+  .foot-grid a{color:var(--dim); font-size:.9rem; transition:color .15s;}
+  .foot-grid a:hover{color:var(--cyan2);}
+  .foot-about p{color:var(--dim); font-size:.9rem; max-width:300px; margin:14px 0 18px;}
+
+  .contact-form{display:flex; flex-direction:column; gap:10px;}
+  .contact-form input, .contact-form textarea{
+    background:var(--bg1); border:1px solid var(--line); border-radius:7px;
+    padding:11px 13px; color:var(--ink); font-family:var(--f-body); font-size:.88rem;
+    outline:none; resize:none;
+  }
+  .contact-form input:focus, .contact-form textarea:focus{border-color:var(--cyan);}
+  .contact-form button{align-self:flex-start;}
+
+  .foot-bottom{
+    display:flex; justify-content:space-between; align-items:center;
+    padding-top:24px; border-top:1px solid var(--line-soft);
+    font-family:var(--f-mono); font-size:.76rem; color:var(--dim2);
+    flex-wrap:wrap; gap:14px;
+  }
+  .foot-social{display:flex; gap:14px;}
+  .foot-social a{
+    width:34px; height:34px; border:1px solid var(--line); border-radius:50%;
+    display:flex; align-items:center; justify-content:center; color:var(--dim);
+    transition:all .15s;
+  }
+  .foot-social a:hover{color:var(--cyan2); border-color:var(--cyan);}
+  .foot-social svg{width:15px; height:15px;}
+
+  /* ============ RESPONSIVE ============ */
+  @media (max-width:980px){
+    .hero{grid-template-columns:1fr; gap:50px; padding-top:50px;}
+    .hero h1{font-size:2.6rem;}
+    .shots{grid-template-columns:1fr 1fr;}
+    .cmd-grid{grid-template-columns:1fr 1fr;}
+    .vip{grid-template-columns:1fr; text-align:left;}
+    .vip-price{text-align:left;}
+    .vip::before{display:none;}
+    .foot-grid{grid-template-columns:1fr 1fr; gap:32px;}
+  }
+  @media (max-width:680px){
+    .nav-links{display:none;}
+    .nav-burger{display:flex;}
+    .nav-actions .btn span.full{display:none;}
+    .shots{grid-template-columns:1fr;}
+    .cmd-grid{grid-template-columns:1fr;}
+    .hero h1{font-size:2.1rem;}
+    .hero-stats{flex-wrap:wrap; gap:24px;}
+    .foot-grid{grid-template-columns:1fr;}
+    .foot-bottom{flex-direction:column; align-items:flex-start;}
+  }
+
+  /* reveal */
+  .reveal{opacity:0; transform:translateY(24px); transition:opacity .6s ease, transform .6s ease;}
+  .reveal.in{opacity:1; transform:translateY(0);}
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="nav-inner">
+    <a href="#top" class="logo">
+      <span class="logo-mark">
+        <img src="jarvis-logo.png" alt="JARVIS">
+      </span>
+      <span>JARVIS<small>VOICE OS</small></span>
+    </a>
+
+    <nav class="nav-links">
+      <a href="#screens">Интерфейс</a>
+      <a href="#commands">Команды</a>
+      <a href="#updates" class="has-dot"><span class="dot-new"></span>Обновления</a>
+      <a href="#vip">VIP</a>
+      <a href="#" onclick="openModal('authorModal'); return false;">О разработчике</a>
+    </nav>
+
+    <div class="nav-actions">
+      <button onclick="openModal('loginModal')" class="btn btn-ghost"><span class="full">Войти</span></button>
+      <button onclick="openModal('registerModal')" class="btn btn-ghost"><span class="full">Регистрация</span></button>
+      <button onclick="location.href='profile.html'" id="cabNavBtn" class="btn btn-ghost" style="display:none; border-color:var(--cyan);"><span class="full">Профиль</span></button>
+      <a href="#vip" class="btn btn-vip">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 7L8 10L12 4L16 10L21 7L19 18H5L3 7Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+        <span class="full">VIP</span>
+      </a>
+      <button class="nav-burger" aria-label="Меню"><span></span><span></span><span></span></button>
+    </div>
+  </div>
+</header>
+
+<div class="wrap" id="top">
+  <section class="hero">
+    <div class="reveal in">
+      <div class="eyebrow">Голосовой ИИ-ассистент для Windows</div>
+      <h1>Ваш голос —<br>его <span class="accent">команда</span></h1>
+      <p class="lead">
+        JARVIS живёт на вашем рабочем столе и реагирует на голос: открывает сайты и приложения,
+        переводит речь в реальном времени, считает, ставит таймеры и держит в курсе того,
+        что происходит на экране — без лишних кликов.
+      </p>
+      <div class="hero-cta">
+        <a href="#download" class="btn btn-solid btn-lg">Скачать для Windows</a>
+        <a href="#commands" class="btn btn-ghost btn-lg">Что умеет JARVIS</a>
+      </div>
+      <div class="hero-stats">
+        <div><b>10+</b><span>групп команд</span></div>
+        <div><b>RU / EN</b><span>языки голоса</span></div>
+        <div><b id="hero-current-version">0.9</b><span>текущая версия</span></div>
+      </div>
+    </div>
+
+    <div class="reveal in">
+      <div class="hud">
+        <span class="hud-tick t-top">HEY JARVIS</span>
+        <span class="hud-tick t-bottom">SYSTEM ONLINE</span>
+        <span class="hud-tick t-left">MIC 0</span>
+        <span class="hud-tick t-right">GEMINI 2.5</span>
+        <div class="hud-ring r1"></div>
+        <div class="hud-ring r2"></div>
+        <div class="hud-ring r3"></div>
+        <svg class="hud-arc" viewBox="0 0 200 200">
+          <circle id="hudArcCircle" cx="100" cy="100" r="96" stroke="#00b4ff"/>
+        </svg>
+        <div class="hud-core">
+          <div class="hud-dot" id="hudDot"></div>
+          <div class="hud-state" id="hudState">ОЖИДАНИЕ</div>
+          <div class="hud-sub" id="hudSub">Скажите «Hey Jarvis», чтобы начать</div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<div class="wrap" id="screens">
+  <section>
+    <div class="section-head reveal">
+      <div class="eyebrow">Интерфейс</div>
+      <h2>Тонкий HUD, который не мешает</h2>
+      <p>Прозрачный оверлей всегда под рукой: цвет и подпись меняются по статусу — от ожидания команды до озвучки ответа.</p>
+    </div>
+
+    <div class="shots reveal">
+      <div class="shot">
+        <div class="shot-top">
+          <div class="mock-bar" style="border-color:rgba(0,180,255,.35); color:#00b4ff;">
+            <span class="mock-dot" style="background:#00b4ff; box-shadow:0 0 8px #00b4ff;"></span>
+            ОЖИДАНИЕ · HEY JARVIS
+          </div>
+        </div>
+        <div class="shot-body">
+          <div class="eyebrow" style="color:#00b4ff;">01 · Режим ожидания</div>
+          <h4>Всегда на стенде</h4>
+          <p>Лёгкий индикатор синего цвета в углу экрана. Не отвлекает, пока вы не позвали джарвиса.</p>
+        </div>
+      </div>
+
+      <div class="shot">
+        <div class="shot-top">
+          <div class="mock-bar" style="border-color:rgba(255, 240, 25, 0.445); color:#e5ff00;">
+            <span class="mock-dot" style="background:#e5ff00; box-shadow:0 0 8px #e5ff00;"></span>
+            ГОВОРИТЕ · СЛУШАЮ...
+            <span class="mock-bars" style="color:#e5ff00;">
+              <i style="height:6px;"></i><i style="height:12px;"></i><i style="height:8px;"></i><i style="height:14px;"></i><i style="height:5px;"></i>
+            </span>
+          </div>
+        </div>
+        <div class="shot-body">
+          <div class="eyebrow" style="color:#e5ff00;">02 · Активное прослушивание</div>
+          <h4>Жёлтый — значит слушает</h4>
+          <p>HUD подсвечивается жёлтым и показывает живую волну микрофона, пока распознаётся команда.</p>
+        </div>
+      </div>
+
+      <div class="shot">
+        <div class="shot-top">
+          <div class="mock-bar" style="border-color:rgba(255,106,46,.35); color:#ff6a2e;">
+            <span class="mock-dot" style="background:#ff6a2e; box-shadow:0 0 8px #ff6a2e;"></span>
+            ОБРАБОТКА · GEMINI 2.5
+          </div>
+        </div>
+        <div class="shot-body">
+          <div class="eyebrow" style="color:#ff6a2e;">03 · Обработка запроса</div>
+          <h4>Думает — и отвечает голосом</h4>
+          <p>Оранжевый индикатор во время обращения к ИИ, затем ответ озвучивается голосом Jarvis.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<div class="wrap" id="commands">
+  <section>
+    <div class="section-head reveal">
+      <div class="eyebrow">Каталог возможностей</div>
+      <h2>Команды, которые экономят клики</h2>
+      <p>Часть из десятков голосовых сценариев JARVIS — от открытия сайтов до перевода речи в реальном времени.</p>
+    </div>
+
+    <div class="cmd-grid reveal">
+
+      <div class="cmd">
+        <div class="cmd-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.7 4 6 4 9s-1.5 6.3-4 9c-2.5-2.7-4-6-4-9s1.5-6.3 4-9z"/></svg>
+        </div>
+        <h4>Открытие</h4>
+        <ul>
+          <li>«Открой YouTube и найди …»</li>
+          <li>«Запусти Photoshop nudge»</li>
+          <li>«Открой папку с проектами»</li>
+          <li>Поиск в Google голосом</li>
+        </ul>
+      </div>
+
+      <div class="cmd">
+        <div class="cmd-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M8 21h8M12 18v3"/></svg>
+        </div>
+        <h4>Управление окнами</h4>
+        <ul>
+          <li>«Закрой эту вкладку»</li>
+          <li>«Закрой всё, что открыл ты»</li>
+          <li>«Закрой все вкладки YouTube»</li>
+        </ul>
+      </div>
+
+      <div class="cmd">
+        <div class="cmd-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h12M4 6l3-3M4 6l3 3M20 14H8M20 14l-3-3M20 14l-3 3"/></svg>
+        </div>
+        <h4>Перевод речи</h4>
+        <ul>
+          <li>Синхронный перевод голосом Jarvis</li>
+          <li>Реалтайм-перевод в виртуальный кабель для стрима</li>
+          <li>«Выключи перевод»</li>
+        </ul>
+      </div>
+
+      <div class="cmd">
+        <div class="cmd-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 7h6M9 12h6M9 17h3"/><rect x="4" y="3" width="16" height="18" rx="2"/></svg>
+        </div>
+        <h4>Математика</h4>
+        <ul>
+          <li>Счёт без интернета: + − × ÷ ^</li>
+          <li>«Сколько будет 128 умножить на 7»</li>
+          <li>Мгновенный ответ голосом</li>
+        </ul>
+      </div>
+
+      <div class="cmd">
+        <div class="cmd-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l3 2M9 2h6"/></svg>
+        </div>
+        <h4>Таймеры и заметки</h4>
+        <ul>
+          <li>«Поставь таймер на 20 минут»</li>
+          <li>«Запомни: позвонить маме в 18:00»</li>
+          <li>«Покажи список заметок»</li>
+        </ul>
+      </div>
+
+      <div class="cmd">
+        <div class="cmd-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="2" width="8" height="4" rx="1"/><rect x="6" y="4" width="12" height="18" rx="2"/></svg>
+        </div>
+        <h4>Буфер обмена</h4>
+        <ul>
+          <li>«Прочитай буфер обмена»</li>
+          <li>«Переведи скопированный текст»</li>
+          <li>Краткое объяснение текста</li>
+        </ul>
+      </div>
+
+      <div class="cmd">
+        <div class="cmd-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="14" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 14l-5-4-4 3-3-2-6 5"/></svg>
+        </div>
+        <h4>Экран</h4>
+        <ul>
+          <li>«Что у меня на экране?»</li>
+          <li>Скриншот + описание через Gemini Vision</li>
+        </ul>
+      </div>
+
+      <div class="cmd">
+        <div class="cmd-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10v4h4l5 5V5L7 10H3z"/><path d="M16 8a5 5 0 010 8M19 5a8.5 8.5 0 010 14"/></svg>
+        </div>
+        <h4>Громкость</h4>
+        <ul>
+          <li>«Сделай громче / тише»</li>
+          <li>«Поставь громкость 30%»</li>
+          <li>«Поставь стандартную громкость»</li>
+        </ul>
+      </div>
+
+      <div class="cmd">
+        <div class="cmd-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v4M12 17v4M5 12H1M23 12h-4M5.6 5.6l2.8 2.8M18.4 5.6l-2.8 2.8M5.6 18.4l2.8-2.8M18.4 18.4l-2.8-2.8"/><circle cx="12" cy="12" r="3"/></svg>
+        </div>
+        <h4>Свои команды</h4>
+        <ul>
+          <li>Привязка фраз к запуску файлов/папок</li>
+          <li>Свой wake word</li>
+          <li>Отложенный запуск действий</li>
+        </ul>
+      </div>
+
+    </div>
+  </section>
+</div>
+
+<div class="wrap" id="updates">
+  <section>
+    <div class="divider" style="margin-bottom:60px;"></div>
+    <div class="section-head reveal">
+      <div class="eyebrow">Журнал обновлений</div>
+      <h2>JARVIS становится умнее каждую неделю</h2>
+    </div>
+    
+    <div class="cmd-grid reveal" style="grid-template-columns:repeat(3,1fr);" id="index-updates-container">
+      <div class="cmd">
+        <div class="eyebrow" style="color:#00ffa8;">v0.9 · сейчас</div>
+        <h4 style="margin-top:10px;">Статусы интерфейса</h4>
+        <p style="color:var(--dim); font-size:.88rem; margin-top:6px;">Новая цепочка состояний HUD: ожидание → слушаю → говорите → обработка → ответ, плюс стоп-слово для прерывания речи.</p>
+      </div>
+      <div class="cmd">
+        <div class="eyebrow" style="color:#ffd24a;">v0.55</div>
+        <h4 style="margin-top:10px;">Шифрование ключей</h4>
+        <p style="color:var(--dim); font-size:.88rem; margin-top:6px;">API-ключи теперь хранятся в зашифрованном виде, привязаны к конкретному устройству.</p>
+      </div>
+      <div class="cmd">
+        <div class="eyebrow" style="color:#00b4ff;">v0.5</div>
+        <h4 style="margin-top:10px;">Управление громкостью</h4>
+        <p style="color:var(--dim); font-size:.88rem; margin-top:6px;">Голосовое управление громкостью Windows, стандартный профиль и точная настройка в процентах.</p>
+      </div>
+    </div>
+    
+    <div style="text-align:center; margin-top:34px;">
+      <a href="updates.html" class="eyebrow" style="display:inline-flex; justify-content:center; color:var(--cyan2);">
+        Смотреть все обновления
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;margin-left:2px;"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </a>
+    </div>
+  </section>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  const container = document.getElementById('index-updates-container');
+  if (!container) return;
+
+  // Тот же принцип, что и в основном <script> ниже: не зашиваем localhost.
+  const API = window.JARVIS_API_BASE || `${location.protocol}//${location.hostname}:8000/api`;
+
+  // ── Загрузка текущей версии ──────────────────────────────────────────────
+  // Приоритет: /api/current-version → последняя запись журнала → статичный fallback
+  fetch(API + '/current-version')
+    .then(res => res.ok ? res.json() : null)
+    .then(data => {
+      const versionEl = document.getElementById('hero-current-version');
+      if (!versionEl) return;
+      if (data && data.version) {
+        versionEl.textContent = data.version;
+      } else {
+        // Фоллбэк: берём самую последнюю из журнала
+        return fetch(API + '/updates')
+          .then(r => r.ok ? r.json() : null)
+          .then(updates => {
+            if (!updates || updates.length === 0) return;
+            const sorted = [...updates].sort((a, b) => new Date(b.release_date) - new Date(a.release_date));
+            if (sorted[0] && sorted[0].version) versionEl.textContent = sorted[0].version;
+          });
+      }
+    })
+    .catch(() => {}); // оставляем статичное «0.9» при ошибке
+
+  fetch(API + '/updates/featured')
+    .then(res => {
+      if (!res.ok) throw new Error('Сервер вернул ошибку');
+      return res.json();
+    })
+    .then(updates => {
+      if (!updates || updates.length === 0) return; // оставляем дефолтную разметку, если в админке ещё ничего не отмечено
+
+      const escHtml = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      }[c]));
+
+      container.innerHTML = updates.map((u, idx) => `
+        <div class="cmd">
+          <div class="eyebrow" style="color:${u.featured_color || '#00b4ff'};">${escHtml(u.version)}${idx === 0 ? ' · сейчас' : ''}</div>
+          <h4 style="margin-top:10px;">${escHtml(u.title)}</h4>
+          <p style="color:var(--dim); font-size:.88rem; margin-top:6px;">${escHtml(u.changelog && u.changelog[0] ? u.changelog[0].text : '')}</p>
+        </div>
+      `).join('');
+    })
+    .catch(err => {
+      console.error('Не удалось загрузить обновления для главной:', err);
+      // оставляем статичную разметку как запасной вариант
+    });
+});
+</script>
+
+<div class="wrap" id="vip">
+  <section>
+    <div class="vip reveal">
+      <div>
+        <div class="eyebrow" style="color:#ffd24a;">JARVIS VIP</div>
+        <h2>Расширьте возможности ассистента</h2>
+        <p>Безлимитные запросы к ИИ, приоритетные модели, расширенный голосовой банк и кастомные темы интерфейса — для тех, кто живёт с Jarvis каждый день.</p>
+        <div class="vip-feats" style="margin-top:24px;">
+          <div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg> Безлимитные запросы к Gemini</div>
+          <div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg> Приоритетная очередь распознавания</div>
+          <div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg> Дополнительные голоса и темы HUD</div>
+          <div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg> Ранний доступ к новым функциям</div>
+        </div>
+      </div>
+      <div class="vip-price">
+        <div class="price">$1<span>/ месяц</span></div>
+        <p style="font-size:.85rem; margin-top:8px;">или $10 за год — экономия 17%</p>
+        <button onclick="openVipPurchase()" class="btn btn-vip btn-lg">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 7L8 10L12 4L16 10L21 7L19 18H5L3 7Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+          Получить VIP
+        </button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<div id="loginModal" class="modal-overlay" onclick="closeModal(event, 'loginModal')">
+  <div class="modal-box">
+    <button class="modal-close" onclick="document.getElementById('loginModal').classList.remove('active')">×</button>
+    <div class="eyebrow">Авторизация</div>
+    <h3 style="font-size:1.8rem; margin-top:10px; text-transform:uppercase;">Вход в систему</h3>
+    <form class="auth-form" onsubmit="handleAuth(event, 'login')">
+      <div class="form-group">
+        <label>Ваш Email</label>
+        <input type="email" placeholder="name@example.com" required>
+      </div>
+      <div class="form-group">
+        <label>Пароль</label>
+        <input type="password" placeholder="••••••••" required>
+      </div>
+      <button type="submit" class="btn btn-solid" style="justify-content:center; margin-top:10px;">Войти в терминал</button>
+    </form>
+    <div class="auth-switch">Ещё нет аккаунта? <span onclick="switchModal('loginModal', 'registerModal')">Создать профиль</span></div>
+  </div>
+</div>
+
+<div id="registerModal" class="modal-overlay" onclick="closeModal(event, 'registerModal')">
+  <div class="modal-box">
+    <button class="modal-close" onclick="document.getElementById('registerModal').classList.remove('active')">×</button>
+    <div class="eyebrow">Регистрация</div>
+    <h3 style="font-size:1.8rem; margin-top:10px; text-transform:uppercase;">Создать аккаунт</h3>
+    <form class="auth-form" onsubmit="handleAuth(event, 'register')">
+      <div class="form-group">
+        <label>Имя пользователя</label>
+        <input type="text" placeholder="TonyStark" minlength="3" maxlength="50" pattern="[A-Za-zА-Яа-яЁё0-9_\-]+" required>
+        <span class="field-hint">3–50 символов: буквы, цифры, «_» и «-» (без пробелов)</span>
+      </div>
+      <div class="form-group">
+        <label>Ваш Email</label>
+        <input type="email" placeholder="name@example.com" required>
+      </div>
+      <div class="form-group">
+        <label>Пароль</label>
+        <input type="password" placeholder="••••••••" minlength="8" required>
+        <span class="field-hint">Минимум 8 символов</span>
+      </div>
+      <button type="submit" class="btn btn-solid" style="justify-content:center; margin-top:10px;">Зарегистрироваться</button>
+    </form>
+    <div class="auth-switch">Уже есть аккаунт? <span onclick="switchModal('registerModal', 'loginModal')">Войти</span></div>
+  </div>
+</div>
+
+<div id="vipPurchaseModal" class="modal-overlay" onclick="closeModal(event, 'vipPurchaseModal')">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeVipPurchaseModal()">×</button>
+    <div class="eyebrow" style="color:#ffd24a;">JARVIS VIP</div>
+    <h3 style="font-size:1.8rem; margin-top:10px; text-transform:uppercase;">Оформить подписку</h3>
+
+    <div id="vipPurchaseStepPlan">
+      <p style="color:var(--dim); font-size:.9rem; margin-top:6px;">Выберите тариф — VIP активируется сразу после оплаты.</p>
+
+      <div class="vip-plan-options" style="display:flex; flex-direction:column; gap:10px; margin-top:18px;">
+        <label class="vip-plan-option" style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px 16px; border:1px solid var(--line); border-radius:10px; cursor:pointer; transition:border-color .15s;">
+          <span style="display:flex; align-items:center; gap:10px;">
+            <input type="radio" name="vipPlanChoice" value="month" checked style="width:16px; height:16px; accent-color:#ffd24a;">
+            <span>
+              <span style="display:block; font-weight:600;">1 месяц</span>
+              <span style="display:block; color:var(--dim); font-size:.78rem;">Продление в любой момент</span>
+            </span>
+          </span>
+          <span style="font-family:var(--f-mono); font-weight:700; color:#ffd24a;">$1</span>
+        </label>
+
+        <label class="vip-plan-option" style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px 16px; border:1px solid rgba(255,210,74,.4); border-radius:10px; cursor:pointer; background:rgba(255,210,74,.05);">
+          <span style="display:flex; align-items:center; gap:10px;">
+            <input type="radio" name="vipPlanChoice" value="year" style="width:16px; height:16px; accent-color:#ffd24a;">
+            <span>
+              <span style="display:block; font-weight:600;">1 год <span style="color:#00ffa8; font-size:.72rem; font-weight:700;">−17%</span></span>
+              <span style="display:block; color:var(--dim); font-size:.78rem;">Выгоднее, чем платить помесячно</span>
+            </span>
+          </span>
+          <span style="font-family:var(--f-mono); font-weight:700; color:#ffd24a;">$10</span>
+        </label>
+      </div>
+
+      <button id="vipPurchaseSubmitBtn" onclick="submitVipPurchase()" class="btn btn-vip btn-lg" style="width:100%; justify-content:center; margin-top:22px;">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="16" height="16"><rect x="2" y="5" width="20" height="14" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M2 10H22" stroke="currentColor" stroke-width="1.8"/></svg>
+        <span id="vipPurchaseSubmitLabel">Оплатить $1</span>
+      </button>
+      <p id="vipPurchaseLoginHint" style="display:none; color:var(--dim); font-size:.8rem; margin-top:10px; text-align:center;">
+        Нужно сначала <span onclick="switchModal('vipPurchaseModal', 'loginModal')" style="color:var(--cyan); cursor:pointer; text-decoration:underline;">войти</span>
+        или <span onclick="switchModal('vipPurchaseModal', 'registerModal')" style="color:var(--cyan); cursor:pointer; text-decoration:underline;">зарегистрироваться</span>.
+      </p>
+    </div>
+
+    <div id="vipPurchaseStepProcessing" style="display:none; text-align:center; padding:30px 0;">
+      <div class="vip-spinner" style="width:42px; height:42px; margin:0 auto 18px; border:3px solid rgba(255,210,74,.2); border-top-color:#ffd24a; border-radius:50%; animation:vipSpin .8s linear infinite;"></div>
+      <p style="color:var(--ink); font-weight:600;">Обработка платежа…</p>
+      <p style="color:var(--dim); font-size:.82rem; margin-top:4px;">Это займёт всего пару секунд</p>
+    </div>
+
+    <div id="vipPurchaseStepSuccess" style="display:none; text-align:center; padding:10px 0;">
+      <div style="width:54px; height:54px; margin:0 auto 16px; border-radius:50%; background:rgba(0,255,168,.1); display:flex; align-items:center; justify-content:center; border:1px solid rgba(0,255,168,.3);">
+        <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="#00ffa8" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+      </div>
+      <h4 style="font-size:1.2rem; text-transform:uppercase;">VIP активирован!</h4>
+      <p id="vipPurchaseSuccessMsg" style="color:var(--dim); font-size:.88rem; margin-top:6px;"></p>
+
+      <div style="margin-top:18px; padding:14px; background:var(--bg2); border:1px solid var(--line); border-radius:10px;">
+        <div style="color:var(--dim); font-size:.72rem; text-transform:uppercase; letter-spacing:.05em;">Ваш VIP-код</div>
+        <div style="display:flex; align-items:center; justify-content:center; gap:10px; margin-top:8px;">
+          <span id="vipPurchaseCode" style="font-family:var(--f-mono); font-weight:700; color:#ffd24a; font-size:1.05rem; letter-spacing:.04em;">—</span>
+          <button onclick="copyVipPurchaseCode()" id="vipPurchaseCopyBtn" class="btn btn-ghost" style="padding:4px 10px; font-size:.72rem;">Копировать</button>
+        </div>
+        <p style="color:var(--dim); font-size:.74rem; margin-top:8px;">Введите этот код в приложении JARVIS. Код также сохранён в вашем профиле.</p>
+      </div>
+
+      <button onclick="closeVipPurchaseModal()" class="btn btn-solid" style="width:100%; justify-content:center; margin-top:18px;">Готово</button>
+    </div>
+
+    <div id="vipPurchaseStepError" style="display:none; text-align:center; padding:20px 0;">
+      <p id="vipPurchaseErrorMsg" style="color:var(--orange); font-size:.9rem;"></p>
+      <button onclick="resetVipPurchaseModal()" class="btn btn-ghost" style="margin-top:14px;">Попробовать снова</button>
+    </div>
+  </div>
+</div>
+<style>
+@keyframes vipSpin { to { transform: rotate(360deg); } }
+.vip-plan-option:has(input:checked) { border-color: #ffd24a !important; }
+</style>
+
+<div class="wrap" id="download">
+  <section>
+    <div class="divider" style="margin-bottom:60px;"></div>
+    <div style="
+      border:1px solid var(--line);
+      border-radius:20px;
+      background:linear-gradient(135deg, rgba(0,180,255,.07), rgba(0,180,255,.02));
+      padding:56px 48px;
+      display:grid;
+      grid-template-columns:1fr auto;
+      gap:40px;
+      align-items:center;
+      position:relative;
+      overflow:hidden;
+    " class="reveal">
+      <!-- фоновый текст -->
+      <div style="
+        position:absolute; right:-10px; bottom:-40px;
+        font-family:var(--f-display); font-weight:700; font-size:10rem;
+        color:rgba(0,180,255,.04); letter-spacing:.05em;
+        pointer-events:none; user-select:none;
+      ">DOWNLOAD</div>
+
+      <div style="position:relative;">
+        <div class="eyebrow">Загрузка</div>
+        <h2 style="font-size:2.2rem; text-transform:uppercase; margin-top:14px; line-height:1.1;">
+          JARVIS для <span style="color:var(--cyan2); text-shadow:0 0 20px rgba(0,180,255,.4);">Windows</span>
+        </h2>
+        <p style="color:var(--dim); margin-top:14px; max-width:520px; font-size:1rem;">
+          Скачайте установщик и запустите <code style="font-family:var(--f-mono); color:var(--cyan); background:rgba(0,180,255,.08); padding:2px 7px; border-radius:4px;">JARVIS_Setup_1.1.0.exe</code> — ассистент установится и будет готов к работе за минуту.
+        </p>
+
+        <div style="display:flex; gap:28px; margin-top:28px; flex-wrap:wrap;">
+          <div style="display:flex; align-items:center; gap:10px; font-family:var(--f-mono); font-size:.8rem; color:var(--dim);">
+            <svg viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;flex:none;"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+            Windows 10 / 11
+          </div>
+          <div style="display:flex; align-items:center; gap:10px; font-family:var(--f-mono); font-size:.8rem; color:var(--dim);">
+            <svg viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;flex:none;"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+            <!-- TODO: подставь реальный размер JARVIS_Setup_1.1.0.exe с GitHub Releases -->
+            EXE-установщик
+          </div>
+          <div style="display:flex; align-items:center; gap:10px; font-family:var(--f-mono); font-size:.8rem; color:var(--dim);">
+            <svg viewBox="0 0 24 24" fill="none" stroke="var(--mint)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;flex:none;"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            Безопасно · Без вирусов
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex; flex-direction:column; align-items:center; gap:14px; position:relative;">
+        <a
+          id="downloadBtn"
+          href="https://github.com/MWxAram/Jarvis-AI/releases/download/v1.1.0/JARVIS_Setup_1.1.0.exe"
+          download="JARVIS_Setup_1.1.0.exe"
+          class="btn btn-solid btn-lg"
+          style="font-size:1.05rem; padding:18px 36px; border-radius:12px; gap:12px; box-shadow:0 0 0 1px rgba(0,180,255,.3), 0 12px 40px -8px rgba(0,180,255,.7);"
+          onclick="handleDownload(this)"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:22px;height:22px;flex:none;"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+          Скачать JARVIS_Setup_1.1.0.exe
+        </a>
+        <span style="font-family:var(--f-mono); font-size:.7rem; color:var(--dim2); letter-spacing:.08em;">
+          Бесплатно
+        </span>
+      </div>
+    </div>
+
+    <!-- Инструкция установки -->
+    <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:1px; margin-top:24px; border:1px solid var(--line); border-radius:14px; overflow:hidden; background:var(--line);" class="reveal">
+      <div style="background:var(--bg1); padding:24px 22px;">
+        <div style="font-family:var(--f-mono); font-size:.65rem; color:var(--cyan); letter-spacing:.18em; margin-bottom:10px;">ШАГ 01</div>
+        <h4 style="font-family:var(--f-display); font-size:.95rem; text-transform:uppercase; margin-bottom:6px;">Скачать</h4>
+        <p style="color:var(--dim); font-size:.82rem;">Нажмите кнопку выше — файл <code style="font-family:var(--f-mono); color:var(--cyan);">JARVIS_Setup_1.1.0.exe</code> начнёт загружаться</p>
+      </div>
+      <div style="background:var(--bg1); padding:24px 22px;">
+        <div style="font-family:var(--f-mono); font-size:.65rem; color:var(--cyan); letter-spacing:.18em; margin-bottom:10px;">ШАГ 02</div>
+        <h4 style="font-family:var(--f-display); font-size:.95rem; text-transform:uppercase; margin-bottom:6px;">Установить</h4>
+        <p style="color:var(--dim); font-size:.82rem;">Запустите скачанный файл и пройдите короткий мастер установки</p>
+      </div>
+      <div style="background:var(--bg1); padding:24px 22px;">
+        <div style="font-family:var(--f-mono); font-size:.65rem; color:var(--cyan); letter-spacing:.18em; margin-bottom:10px;">ШАГ 03</div>
+        <h4 style="font-family:var(--f-display); font-size:.95rem; text-transform:uppercase; margin-bottom:6px;">Запустить</h4>
+        <p style="color:var(--dim); font-size:.82rem;">Откройте JARVIS с рабочего стола или через меню Пуск</p>
+      </div>
+      <div style="background:var(--bg1); padding:24px 22px;">
+        <div style="font-family:var(--f-mono); font-size:.65rem; color:var(--mint); letter-spacing:.18em; margin-bottom:10px;">ШАГ 04</div>
+        <h4 style="font-family:var(--f-display); font-size:.95rem; text-transform:uppercase; margin-bottom:6px;">Готово!</h4>
+        <p style="color:var(--dim); font-size:.82rem;">Скажите <code style="font-family:var(--f-mono); color:var(--mint);">«Hey Jarvis»</code> — ассистент слушает вас</p>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+function handleDownload(btn) {
+  const original = btn.innerHTML;
+  setTimeout(() => {
+    btn.innerHTML = `
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:22px;height:22px;flex:none;"><path d="M20 6L9 17l-5-5"/></svg>
+      Загрузка началась…
+    `;
+    btn.style.background = 'linear-gradient(135deg, var(--mint), #00c87a)';
+    btn.style.boxShadow = '0 0 0 1px rgba(0,255,168,.3), 0 12px 40px -8px rgba(0,255,168,.5)';
+    setTimeout(() => {
+      btn.innerHTML = original;
+      btn.style.background = '';
+      btn.style.boxShadow = '';
+    }, 4000);
+  }, 100);
+}
+</script>
+
+<style>
+@media (max-width: 680px) {
+  #download .wrap > section > div:first-of-type {
+    grid-template-columns: 1fr !important;
+  }
+  #download [style*="grid-template-columns:repeat(4"] {
+    grid-template-columns: 1fr 1fr !important;
+  }
+}
+</style>
+
+<footer id="contact">
+  <div class="wrap">
+    <div class="foot-grid">
+      <div class="foot-about">
+        <div class="logo" style="font-size:1.15rem;">
+          <span class="logo-mark">
+            <img src="jarvis-logo.png" alt="JARVIS">
+          </span>
+          <span>JARVIS</span>
+        </div>
+        <p>Голосовой ассистент, который живёт на вашем рабочем столе и реагирует на «Hey Jarvis» — открывает, переводит, считает и помнит за вас.</p>
+      </div>
+
+      <div>
+        <h5>Продукт</h5>
+        <ul>
+          <li><a href="#screens">Интерфейс</a></li>
+          <li><a href="#commands">Команды</a></li>
+          <li><a href="#updates">Обновления</a></li>
+          <li><a href="#vip">VIP-подписка</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h5>Аккаунт</h5>
+        <ul>
+          <li><button onclick="openModal('loginModal')" style="background:none; border:none; color:var(--dim); font-size:.9rem; cursor:pointer; transition:color .15s;">Войти</button></li>
+          <li><button onclick="openModal('registerModal')" style="background:none; border:none; color:var(--dim); font-size:.9rem; cursor:pointer; transition:color .15s;">Регистрация</button></li>
+          <li><a href="#download">Скачать</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h5>Связаться с нами</h5>
+        <form class="contact-form">
+          <input type="email" placeholder="Ваш email" required>
+          <textarea rows="3" placeholder="Сообщение..." required></textarea>
+          <button type="submit" class="btn btn-solid">Отправить</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="foot-bottom">
+      <span>© 2026 JARVIS VOICE OS. Все права защищены.</span>
+      <div class="foot-social">
+        <a href="#" aria-label="Telegram"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M21.9 4.6c.3-1.1-.5-1.7-1.4-1.3L2.4 10.6c-1.1.4-1.1 1.1-.2 1.4l4.6 1.4 1.8 5.6c.2.6.4.8.9.8.4 0 .6-.2.9-.5l2.2-2.1 4.5 3.3c.8.5 1.4.2 1.6-.8L21.9 4.6z"/></svg></a>
+        <a href="#" aria-label="Discord"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 5.5c-1.4-.7-2.9-1.1-4.5-1.4l-.3.6c1.4.3 2.7.8 3.9 1.5-3.4-1.6-7.4-1.6-10.9 0 1.2-.7 2.5-1.2 3.9-1.5l-.3-.6C10.4 4.4 8.9 4.8 7.5 5.5 5 9 4.3 12.4 4.6 15.8c1.6 1.2 3.2 1.9 4.7 2.3l.6-1c-.8-.3-1.6-.7-2.3-1.1.2-.1.4-.3.6-.4 2.9 1.3 6.1 1.3 9 0 .2.1.4.3.6.4-.7.4-1.5.8-2.3 1.1l.6 1c1.5-.4 3.1-1.1 4.7-2.3.4-3.9-.6-7.2-2.3-10.3zM9.5 13.8c-.8 0-1.5-.8-1.5-1.7 0-1 .7-1.7 1.5-1.7s1.5.8 1.5 1.7c0 1-.7 1.7-1.5 1.7zm5 0c-.8 0-1.5-.8-1.5-1.7 0-1 .7-1.7 1.5-1.7s1.5.8 1.5 1.7c0 1-.7 1.7-1.5 1.7z"/></svg></a>
+        <a href="#" aria-label="Mail"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg></a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // ══════════════════════════════════════════════════════════
+  //  JARVIS BACKEND API — клиент
+  //  Все вызовы к FastAPI на порту 8000
+  // ══════════════════════════════════════════════════════════
+  // Раньше здесь был жёстко зашитый 'http://localhost:8000/api' —
+  // фронтенд ломался при любом деплое кроме локальной разработки.
+  // Теперь адрес берётся из window.JARVIS_API_BASE (можно задать одним
+  // <script>window.JARVIS_API_BASE='https://api.example.com/api'
+  // перед этим файлом при деплое), а если он не задан — используется
+  // тот же хост, с которого открыта страница, порт 8000 (как раньше).
+  const API = window.JARVIS_API_BASE || `${location.protocol}//${location.hostname}:8000/api`;
+
+  // ── Токены: хранение в localStorage ──────────────────────
+  const Token = {
+    get access()  { return localStorage.getItem('jrv_access'); },
+    get refresh() { return localStorage.getItem('jrv_refresh'); },
+    set(a, r) {
+      localStorage.setItem('jrv_access',  a);
+      localStorage.setItem('jrv_refresh', r);
+    },
+    clear() {
+      localStorage.removeItem('jrv_access');
+      localStorage.removeItem('jrv_refresh');
+    },
+  };
+
+  // ── Превращает ошибку FastAPI/Pydantic в читаемый текст ──
+  // 422 от FastAPI приходит как { detail: [{ loc, msg, type }, ...] } —
+  // массив объектов. Раньше он подставлялся в textContent как есть,
+  // из-за чего показывалось "[object Object]".
+  function formatApiError(data, fallback) {
+    const d = data && data.detail;
+    if (!d) return fallback || 'Ошибка сервера';
+    if (typeof d === 'string') return d;
+
+    if (Array.isArray(d)) {
+      const fieldNames = {
+        username: 'Имя пользователя',
+        email:    'Email',
+        password: 'Пароль',
+      };
+      const lines = d.map(item => {
+        let msg = (item && item.msg) ? String(item.msg) : 'Некорректное значение';
+        msg = msg.replace(/^Value error,\s*/i, ''); // Pydantic v2 префикс кастомных ошибок
+        const loc = Array.isArray(item && item.loc) ? item.loc[item.loc.length - 1] : '';
+        const field = fieldNames[loc] || loc;
+        return field ? `${field}: ${msg}` : msg;
+      });
+      return [...new Set(lines)].join('; ');
+    }
+
+    if (typeof d === 'object') return JSON.stringify(d);
+    return fallback || 'Ошибка сервера';
+  }
+
+  // ── Универсальный fetch с Bearer-токеном ─────────────────
+  async function apiFetch(path, opts = {}) {
+    const headers = { 'Content-Type': 'application/json', ...opts.headers };
+    if (Token.access) headers['Authorization'] = `Bearer ${Token.access}`;
+
+    let res = await fetch(API + path, { ...opts, headers });
+
+    // Если 401 — пробуем обновить access через refresh
+    if (res.status === 401 && Token.refresh) {
+      const rr = await fetch(API + '/auth/refresh', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refresh_token: Token.refresh }),
+      });
+      if (rr.ok) {
+        const { access_token } = await rr.json();
+        Token.set(access_token, Token.refresh);
+        headers['Authorization'] = `Bearer ${access_token}`;
+        res = await fetch(API + path, { ...opts, headers });
+      } else {
+        Token.clear();
+        showAuthButtons();
+      }
+    }
+    return res;
+  }
+
+  // ── Показать/скрыть кнопки авторизации ───────────────────
+  function showAuthButtons() {
+    document.querySelectorAll('.nav-actions .btn').forEach((b, i) => {
+      if (i < 2) b.style.display = 'inline-flex';
+    });
+    document.getElementById('cabNavBtn').style.display = 'none';
+  }
+
+  function showCabinetButton(name) {
+    document.querySelectorAll('.nav-actions .btn').forEach((b, i) => {
+      if (i < 2) b.style.display = 'none';
+    });
+    document.getElementById('cabNavBtn').style.display = 'inline-flex';
+  }
+
+  // ── Загрузить данные профиля из API ──────────────────────
+  let _isLoggedIn = false;
+  async function loadProfile() {
+    const res = await apiFetch('/users/profile');
+    if (!res.ok) { _isLoggedIn = false; showAuthButtons(); return; }
+    const data = await res.json();
+    _isLoggedIn = true;
+    showCabinetButton(data.username);
+  }
+
+  // ── Автологин если токены есть в localStorage ─────────────
+  if (Token.access) loadProfile().catch(() => showAuthButtons());
+
+  // ── РЕГИСТРАЦИЯ ───────────────────────────────────────────
+  async function handleAuth(e, type) {
+    e.preventDefault();
+    const form  = e.target;
+    const btn   = form.querySelector('[type="submit"]');
+    const email = form.querySelector('input[type="email"]').value.trim();
+    const pass  = form.querySelector('input[type="password"]').value;
+
+    let endpoint, body;
+    if (type === 'register') {
+      const username = form.querySelector('input[type="text"]').value.trim();
+      endpoint = '/auth/register';
+      body = { username, email, password: pass };
+    } else {
+      endpoint = '/auth/login';
+      body = { email, password: pass };
+    }
+
+    btn.textContent = 'Загрузка...';
+    btn.disabled    = true;
+
+    try {
+      const res  = await fetch(API + endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+
+      let data = {};
+      try { data = await res.json(); } catch (_) { /* пустой ответ */ }
+
+      if (!res.ok) {
+        showError(form, formatApiError(data, `Ошибка сервера (${res.status})`));
+        return;
+      }
+
+      Token.set(data.access_token, data.refresh_token);
+
+      // Успешная регистрация/вход — переходим в настоящий личный кабинет
+      window.location.href = 'profile.html';
+
+    } catch (err) {
+      showError(form, 'Не удалось подключиться к серверу');
+    } finally {
+      btn.textContent = type === 'register' ? 'Зарегистрироваться' : 'Войти';
+      btn.disabled    = false;
+    }
+  }
+
+  function showError(form, msg) {
+    let err = form.querySelector('.form-error');
+    if (!err) {
+      err = document.createElement('p');
+      err.className = 'form-error';
+      err.style.cssText = 'color:var(--orange);font-size:.82rem;margin-top:8px;';
+      form.appendChild(err);
+    }
+    err.textContent = msg;
+  }
+
+  // ── ВЫХОД ─────────────────────────────────────────────────
+  async function logout() {
+    await apiFetch('/auth/logout', { method: 'POST' }).catch(() => {});
+    Token.clear();
+    showAuthButtons();
+  }
+
+  // ── КОНТАКТНАЯ ФОРМА ──────────────────────────────────────
+  document.querySelector('.contact-form')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email   = e.target.querySelector('input[type="email"]').value;
+    const message = e.target.querySelector('textarea').value;
+    const btn     = e.target.querySelector('button');
+    btn.disabled  = true;
+
+    try {
+      const res = await fetch(API + '/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, message }),
+      });
+      btn.textContent = res.ok ? 'Отправлено ✓' : 'Ошибка — повторите';
+    } catch {
+      btn.textContent = 'Нет связи с сервером';
+    }
+  });
+
+  // ── VIP: активация ключа ──────────────────────────────────
+  const vipActivateForm = document.getElementById('vipActivateForm');
+  if (vipActivateForm) {
+    vipActivateForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const key = e.target.querySelector('input').value.trim();
+      const btn = e.target.querySelector('button');
+      btn.disabled = true; btn.textContent = 'Проверка...';
+
+      const res = await apiFetch('/vip/activate', {
+        method: 'POST',
+        body: JSON.stringify({ key }),
+      });
+
+      let data = {};
+      try { data = await res.json(); } catch (_) { /* пустой ответ */ }
+
+      if (res.ok) {
+        btn.textContent = `✓ ${data.message}`;
+        btn.style.color = 'var(--mint)';
+        await loadProfile();
+      } else {
+        btn.textContent = formatApiError(data, 'Ошибка');
+        btn.style.color = 'var(--orange)';
+        btn.disabled = false;
+      }
+    });
+  }
+
+  // ── VIP: покупка (демо — сразу выдаёт VIP, пока нет платёжной системы) ──
+  function openVipPurchase() {
+    resetVipPurchaseModal();
+    openModal('vipPurchaseModal');
+    updateVipPurchaseAuthState();
+  }
+
+  function closeVipPurchaseModal() {
+    document.getElementById('vipPurchaseModal').classList.remove('active');
+  }
+
+  function resetVipPurchaseModal() {
+    document.getElementById('vipPurchaseStepPlan').style.display = '';
+    document.getElementById('vipPurchaseStepProcessing').style.display = 'none';
+    document.getElementById('vipPurchaseStepSuccess').style.display = 'none';
+    document.getElementById('vipPurchaseStepError').style.display = 'none';
+    updateVipPurchasePrice();
+  }
+
+  // Если юзер не залогинен — блокируем кнопку оплаты и показываем подсказку
+  function updateVipPurchaseAuthState() {
+    const btn  = document.getElementById('vipPurchaseSubmitBtn');
+    const hint = document.getElementById('vipPurchaseLoginHint');
+    if (_isLoggedIn) {
+      btn.style.display = '';
+      hint.style.display = 'none';
+    } else {
+      btn.style.display = 'none';
+      hint.style.display = 'block';
+    }
+  }
+
+  function updateVipPurchasePrice() {
+    const plan = document.querySelector('input[name="vipPlanChoice"]:checked').value;
+    const label = document.getElementById('vipPurchaseSubmitLabel');
+    label.textContent = plan === 'year' ? 'Оплатить $10' : 'Оплатить $1';
+  }
+
+  document.querySelectorAll('input[name="vipPlanChoice"]').forEach(input => {
+    input.addEventListener('change', updateVipPurchasePrice);
+  });
+
+  let _vipPurchaseLastCode = '';
+
+  async function submitVipPurchase() {
+    if (!_isLoggedIn) return;
+
+    const plan = document.querySelector('input[name="vipPlanChoice"]:checked').value;
+
+    document.getElementById('vipPurchaseStepPlan').style.display = 'none';
+    document.getElementById('vipPurchaseStepProcessing').style.display = 'block';
+
+    // Небольшая имитация обработки платежа для реалистичности UX —
+    // реального списания денег нет, платёжная система пока не подключена.
+    const minDelay = new Promise(resolve => setTimeout(resolve, 1100));
+
+    try {
+      const [res] = await Promise.all([
+        apiFetch('/vip/purchase', {
+          method: 'POST',
+          body: JSON.stringify({ plan }),
+        }),
+        minDelay,
+      ]);
+
+      let data = {};
+      try { data = await res.json(); } catch (_) { /* пустой ответ */ }
+
+      document.getElementById('vipPurchaseStepProcessing').style.display = 'none';
+
+      if (!res.ok) {
+        document.getElementById('vipPurchaseErrorMsg').textContent =
+          formatApiError(data, 'Не удалось оформить VIP. Попробуйте ещё раз.');
+        document.getElementById('vipPurchaseStepError').style.display = 'block';
+        return;
+      }
+
+      _vipPurchaseLastCode = data.key_value;
+      document.getElementById('vipPurchaseSuccessMsg').textContent = data.message;
+      document.getElementById('vipPurchaseCode').textContent = data.key_value;
+      document.getElementById('vipPurchaseStepSuccess').style.display = 'block';
+
+      await loadProfile();
+    } catch (err) {
+      document.getElementById('vipPurchaseStepProcessing').style.display = 'none';
+      document.getElementById('vipPurchaseErrorMsg').textContent = 'Не удалось подключиться к серверу';
+      document.getElementById('vipPurchaseStepError').style.display = 'block';
+    }
+  }
+
+  function copyVipPurchaseCode() {
+    if (!_vipPurchaseLastCode) return;
+    navigator.clipboard.writeText(_vipPurchaseLastCode).then(() => {
+      const btn = document.getElementById('vipPurchaseCopyBtn');
+      const original = btn.textContent;
+      btn.textContent = 'Скопировано ✓';
+      setTimeout(() => { btn.textContent = original; }, 1800);
+    });
+  }
+
+  // ════════════════════ UI helpers (без изменений) ══════════════
+  // ---- HUD status cycler ----
+  const states = [
+    { key:'idle',       color:'#00b4ff', label:'ОЖИДАНИЕ',   sub:'Скажите «Hey Jarvis», чтобы начать', dash:0.0 },
+    { key:'listening',  color:'#00ffa8', label:'СЛУШАЮ',     sub:'Активирован голосовой ввод…', dash:0.3 },
+    { key:'speak',      color:'#ffd24a', label:'ГОВОРИТЕ',   sub:'«Открой YouTube и найди лекции по физике»', dash:0.65 },
+    { key:'processing', color:'#ff6a2e', label:'ОБРАБОТКА',  sub:'Запрос к Gemini 2.5 Flash…', dash:0.85 },
+    { key:'speaking',   color:'#00ffa8', label:'JARVIS',     sub:'«Открываю YouTube, сэр»', dash:1.0 },
+  ];
+  let si = 0;
+  const dot = document.getElementById('hudDot');
+  const stateEl = document.getElementById('hudState');
+  const subEl = document.getElementById('hudSub');
+  const arc = document.getElementById('hudArcCircle');
+  const R = 96, C = 2*Math.PI*R;
+  arc.style.strokeDasharray = C;
+
+  function applyState(s){
+    dot.style.background = s.color;
+    dot.style.boxShadow = `0 0 22px 4px ${s.color}`;
+    stateEl.style.color = s.color;
+    stateEl.textContent = s.label;
+    subEl.textContent = s.sub;
+    document.querySelector('.hud-core').style.borderColor = s.color + '55';
+    arc.style.stroke = s.color;
+    arc.style.strokeDashoffset = C * (1 - s.dash);
+  }
+  applyState(states[0]);
+  setInterval(()=>{ si = (si+1) % states.length; applyState(states[si]); }, 2600);
+
+  // ---- scroll reveal ----
+  const obs = new IntersectionObserver(entries=>{
+    entries.forEach(e=>{ if(e.isIntersecting) e.target.classList.add('in'); });
+  }, { threshold:.15 });
+  document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+
+  // ---- mobile nav ----
+  const burger = document.querySelector('.nav-burger');
+  const links  = document.querySelector('.nav-links');
+  burger.addEventListener('click', ()=>{
+    const open = links.style.display === 'flex';
+    links.style.display    = open ? 'none' : 'flex';
+    links.style.position   = 'absolute';
+    links.style.top        = '72px';
+    links.style.left       = '0';
+    links.style.right      = '0';
+    links.style.flexDirection = 'column';
+    links.style.padding    = '20px 28px';
+    links.style.background = 'rgba(4,8,16,.96)';
+    links.style.borderBottom = '1px solid var(--line)';
+    links.style.gap        = '18px';
+  });
+
+  // ---- MODAL CONTROLS ----
+  function openModal(id)  { document.getElementById(id).classList.add('active'); }
+  function closeModal(e, id) {
+    if (e.target === document.getElementById(id))
+      document.getElementById(id).classList.remove('active');
+  }
+  function switchModal(closeId, openId) {
+    document.getElementById(closeId).classList.remove('active');
+    setTimeout(() => openModal(openId), 100);
+  }
+</script>
+
+<!-- ═══ AUTHOR MODAL ═══ -->
+<div id="authorModal" class="modal-overlay" onclick="closeModal(event,'authorModal')">
+  <div class="modal-box" style="max-width:380px; text-align:center;">
+    <button class="modal-close" onclick="document.getElementById('authorModal').classList.remove('active')">×</button>
+
+    <div style="font-family:var(--f-mono);font-size:.7rem;letter-spacing:.22em;text-transform:uppercase;color:var(--cyan);display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:20px;">
+      <span style="width:6px;height:6px;border-radius:50%;background:var(--cyan);box-shadow:0 0 8px var(--cyan);flex:none;"></span>
+      Разработчик
+    </div>
+
+    <!-- Avatar -->
+    <div style="position:relative;width:96px;height:96px;margin:0 auto 16px;">
+      <img
+        id="authorAvatar"
+        src="https://avatars.githubusercontent.com/MWxAram?s=200"
+        alt="MWxAram"
+        style="width:96px;height:96px;border-radius:50%;border:2px solid rgba(0,212,255,.5);object-fit:cover;display:block;"
+        onerror="this.style.display='none';document.getElementById('authorAvatarFallback').style.display='flex';"
+      />
+      <div id="authorAvatarFallback" style="display:none;width:96px;height:96px;border-radius:50%;border:2px solid rgba(0,212,255,.5);background:var(--bg2);align-items:center;justify-content:center;font-size:2.2rem;">👤</div>
+      <div style="position:absolute;inset:-5px;border-radius:50%;border:1px solid rgba(0,212,255,.25);animation:authorPulse 2.4s ease-in-out infinite;pointer-events:none;"></div>
+    </div>
+
+    <h3 style="font-family:var(--f-display);font-size:1.5rem;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;">MWxAram</h3>
+    <p style="font-family:var(--f-mono);font-size:.72rem;color:var(--dim);letter-spacing:.12em;margin-bottom:20px;">Создатель JARVIS AI Assistant</p>
+
+    <div style="height:1px;background:linear-gradient(to right,transparent,rgba(0,212,255,.3),transparent);margin-bottom:20px;"></div>
+
+    <a
+      href="https://github.com/MWxAram"
+      target="_blank"
+      rel="noopener"
+      style="display:inline-flex;align-items:center;gap:9px;padding:11px 24px;background:rgba(0,180,255,.1);border:1px solid rgba(0,212,255,.3);border-radius:8px;color:var(--cyan);font-family:var(--f-mono);font-size:.82rem;font-weight:600;letter-spacing:.04em;text-decoration:none;transition:all .2s ease;"
+      onmouseover="this.style.background='rgba(0,212,255,.2)';this.style.borderColor='var(--cyan)';this.style.color='var(--ink)';"
+      onmouseout="this.style.background='rgba(0,180,255,.1)';this.style.borderColor='rgba(0,212,255,.3)';this.style.color='var(--cyan)';"
+    >
+      <svg viewBox="0 0 24 24" style="width:15px;height:15px;fill:currentColor;flex:none;"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+      GitHub: MWxAram
+    </a>
+
+    <p style="font-family:var(--f-mono);font-size:.68rem;color:rgba(255,255,255,.2);letter-spacing:.08em;margin-top:18px;">© 2025 MWxAram — All rights reserved</p>
+  </div>
+</div>
+<style>
+@keyframes authorPulse{0%,100%{opacity:.3;transform:scale(1);}50%{opacity:.8;transform:scale(1.06);}}
+</style>
+
+</body>
+</html>
